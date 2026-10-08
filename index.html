@@ -1,299 +1,336 @@
+```html
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Trade Intelligent</title>
-
-<style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background: #0b0f14;
-    color: #fff;
-    padding: 16px;
-}
-
-.container {
-    max-width: 1100px;
-    margin: auto;
-}
-
-.header {
-    background: #111820;
-    border: 1px solid #26313d;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-}
-
-.logo {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.subtitle {
-    color: #8c98a5;
-    margin-top: 5px;
-}
-
-.card {
-    background: #111820;
-    border: 1px solid #26313d;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 16px;
-}
-
-.card-title {
-    color: #9aa7b5;
-    font-size: 13px;
-    margin-bottom: 12px;
-}
-
-.chart {
-    height: 300px;
-    position: relative;
-    overflow: hidden;
-    border-radius: 12px;
-    background:
-        linear-gradient(#18212b 1px, transparent 1px),
-        linear-gradient(90deg, #18212b 1px, transparent 1px);
-    background-size: 40px 40px;
-}
-
-.line {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-svg {
-    width: 100%;
-    height: 100%;
-}
-
-.timeframes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.tf {
-    background: #151e27;
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-}
-
-.tf-name {
-    color: #8c98a5;
-    font-size: 12px;
-}
-
-.tf-value {
-    margin-top: 8px;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.bullish {
-    color: #35d07f;
-}
-
-.bearish {
-    color: #ff5c6c;
-}
-
-.signal {
-    text-align: center;
-    padding: 25px;
-}
-
-.signal-name {
-    font-size: 28px;
-    font-weight: bold;
-    color: #ff5c6c;
-}
-
-.confidence {
-    margin-top: 10px;
-    color: #9aa7b5;
-}
-
-.confidence span {
-    color: #fff;
-    font-weight: bold;
-}
-
-.prices {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
-
-.price-box {
-    background: #151e27;
-    border-radius: 12px;
-    padding: 15px;
-}
-
-.price-label {
-    color: #8c98a5;
-    font-size: 12px;
-}
-
-.price-value {
-    margin-top: 8px;
-    font-size: 17px;
-    font-weight: bold;
-}
-
-.footer {
-    text-align: center;
-    color: #65717d;
-    font-size: 12px;
-    padding: 10px;
-}
-
-@media(max-width: 650px) {
-    .prices {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .timeframes {
-        grid-template-columns: 1fr;
-    }
-
-    .chart {
-        height: 250px;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRADE INTELLIGENT - Forex & Gold Market Analysis</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#151c2c',
+                            600: '#1e293b',
+                            500: '#334155'
+                        },
+                        bullish: '#10b981',
+                        bearish: '#ef4444',
+                        accent: '#3b82f6'
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow-green': 'glowGreen 1.5s infinite alternate',
+                        'glow-red': 'glowRed 1.5s infinite alternate',
+                    },
+                    keyframes: {
+                        glowGreen: {
+                            '0%': { boxShadow: '0 0 5px rgba(16, 185, 129, 0.2)' },
+                            '100%': { boxShadow: '0 0 20px rgba(16, 185, 129, 0.6)' }
+                        },
+                        glowRed: {
+                            '0%': { boxShadow: '0 0 5px rgba(239, 68, 68, 0.2)' },
+                            '100%': { boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars and glow utility classes */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .price-up {
+            color: #10b981 !important;
+            animation: flashGreen 0.4s ease-out;
+        }
+        .price-down {
+            color: #ef4444 !important;
+            animation: flashRed 0.4s ease-out;
+        }
+        @keyframes flashGreen {
+            0% { background-color: rgba(16, 185, 129, 0.25); }
+            100% { background-color: transparent; }
+        }
+        @keyframes flashRed {
+            0% { background-color: rgba(239, 68, 68, 0.25); }
+            100% { background-color: transparent; }
+        }
+        .glass-card {
+            background: rgba(21, 28, 44, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transition: all 0.2s ease;
+        }
+    </style>
 </head>
+<body class="bg-[#0b0f19] text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-400">
 
-<body>
+    <!-- Top Navigation / Header -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Logo & Brand -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-chart-line text-slate-950 font-bold text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent uppercase">
+                            TRADE INTELLIGENT
+                        </h1>
+                        <p class="text-xs text-emerald-400 font-medium tracking-wide flex items-center gap-1.5">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="headerSymbolText">XAUUSD</span> • GOLD • Live Market Analysis
+                        </p>
+                    </div>
+                </div>
 
-<div class="container">
-
-    <div class="header">
-        <div class="logo">TRADE INTELLIGENT</div>
-        <div class="subtitle">XAUUSD • GOLD • Market Analysis</div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">MARKET CHART</div>
-
-        <div class="chart">
-            <svg viewBox="0 0 1000 300" preserveAspectRatio="none">
-
-                <polyline
-                    points="
-                    0,220
-                    70,200
-                    130,215
-                    190,170
-                    250,185
-                    310,140
-                    370,155
-                    430,120
-                    490,135
-                    550,90
-                    610,110
-                    670,70
-                    730,95
-                    790,55
-                    850,80
-                    910,45
-                    1000,65"
-                    fill="none"
-                    stroke="#35d07f"
-                    stroke-width="4"
-                />
-
-            </svg>
-        </div>
-    </div>
-
-    <div class="card">
-
-        <div class="card-title">MARKET BIAS</div>
-
-        <div class="timeframes">
-
-            <div class="tf">
-                <div class="tf-name">H1</div>
-                <div class="tf-value bullish">BULLISH</div>
+                <!-- Mobile Quick Controls -->
+                <div class="flex items-center gap-2 md:hidden">
+                    <button id="soundToggleBtnMobile" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                    </button>
+                    <button onclick="toggleSimulation()" id="simToggleMobile" class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition text-xs font-semibold">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="tf">
-                <div class="tf-name">M15</div>
-                <div class="tf-value bullish">BULLISH</div>
-            </div>
+            <!-- Pair Selector & Live Price Stats -->
+            <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto overflow-x-auto py-1">
+                
+                <!-- Pair Dropdown -->
+                <div class="relative">
+                    <select id="symbolSelect" onchange="changeSymbol(this.value)" class="bg-slate-900 border border-slate-700/80 text-slate-100 font-bold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-inner">
+                        <option value="XAUUSD" selected>XAUUSD (Gold)</option>
+                        <option value="EURUSD">EURUSD (Euro)</option>
+                        <option value="GBPUSD">GBPUSD (GBP)</option>
+                        <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                        <option value="US30">US30 (Dow Jones)</option>
+                    </select>
+                </div>
 
-            <div class="tf">
-                <div class="tf-name">M5</div>
-                <div class="tf-value bearish">BEARISH</div>
-            </div>
+                <!-- Price Ticker Box -->
+                <div class="flex items-center gap-3 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-xl">
+                    <div>
+                        <div class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Live Price</div>
+                        <div id="livePriceDisplay" class="font-mono text-base font-bold text-emerald-400 transition-colors duration-200">
+                            $2,654.80
+                        </div>
+                    </div>
+                    <div class="border-l border-slate-800 pl-3">
+                        <div class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">24h Chg</div>
+                        <div id="priceChangeDisplay" class="font-mono text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                            <i class="fa-solid fa-caret-up"></i> +1.24%
+                        </div>
+                    </div>
+                </div>
 
-        </div>
+                <!-- Clock & Control Buttons (Desktop) -->
+                <div class="hidden lg:flex items-center gap-3">
+                    <div class="text-right">
+                        <div id="liveClockTime" class="font-mono text-sm font-semibold text-slate-200">15:35:12</div>
+                        <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">UTC+7 (Jakarta)</div>
+                    </div>
 
-    </div>
+                    <button id="soundToggleBtn" onclick="toggleSound()" title="Sound Notifications" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-slate-700 transition">
+                        <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
+                    </button>
 
-    <div class="card signal">
+                    <button id="simToggleBtn" onclick="toggleSimulation()" title="Pause/Resume Simulation" class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span id="simStatusText">LIVE SIM</span>
+                    </button>
+                </div>
 
-        <div class="card-title">CURRENT SIGNAL</div>
-
-        <div class="signal-name">SIMULATION SELL</div>
-
-        <div class="confidence">
-            Confidence:
-            <span>82%</span>
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <div class="card-title">TRADE LEVELS — SIMULATION</div>
-
-        <div class="prices">
-
-            <div class="price-box">
-                <div class="price-label">ENTRY</div>
-                <div class="price-value">4,124.50</div>
-            </div>
-
-            <div class="price-box">
-                <div class="price-label">SL</div>
-                <div class="price-value">4,129.50</div>
-            </div>
-
-            <div class="price-box">
-                <div class="price-label">TP 1</div>
-                <div class="price-value">4,119.50</div>
-            </div>
-
-            <div class="price-box">
-                <div class="price-label">TP 2</div>
-                <div class="price-value">4,114.50</div>
             </div>
 
         </div>
+    </header>
 
-    </div>
+    <!-- Main Content Body -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
 
-    <div class="footer">
-        Trade Intelligent • Educational Market Analysis Dashboard
-    </div>
+        <!-- Top Market Banner Alert -->
+        <div class="glass-card rounded-xl p-3 px-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-l-4 border-l-emerald-500">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                    <i class="fa-solid fa-bullhorn text-sm"></i>
+                </div>
+                <div class="text-xs">
+                    <span class="font-bold text-slate-100">Market Insight:</span> 
+                    <span id="marketInsightText" class="text-slate-300">XAUUSD showing bullish momentum above $2,645 support level. High volatility expected around US CPI Release.</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Spread:</span>
+                <span id="liveSpread" class="text-xs font-mono font-bold text-slate-200 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">0.15 pts</span>
+            </div>
+        </div>
 
-</div>
+        <!-- Upper Grid: Main Chart & Market Bias side-by-side -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-</body>
-  </html>
+            <!-- MARKET CHART (2 Columns) -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-xl relative overflow-hidden">
+                
+                <!-- Chart Header Controls -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-800/80 pb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">MARKET CHART</h2>
+                            <span id="activeChartPairBadge" class="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md uppercase">XAUUSD • M15</span>
+                        </div>
+                        <div id="chartOHLCDisplay" class="font-mono text-xs text-slate-300 mt-1 flex flex-wrap gap-2">
+                            <span>O: <strong id="ohlcO" class="text-white">$2,652.10</strong></span>
+                            <span>H: <strong id="ohlcH" class="text-emerald-400">$2,658.40</strong></span>
+                            <span>L: <strong id="ohlcL" class="text-red-400">$2,650.00</strong></span>
+                            <span>C: <strong id="ohlcC" class="text-emerald-400">$2,654.80</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Chart Options & Timeframe Toolbar -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        
+                        <!-- Chart Type Switcher -->
+                        <div class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                            <button onclick="setChartType('line')" id="btnChartLine" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                                <i class="fa-solid fa-chart-line mr-1"></i> Line
+                            </button>
+                            <button onclick="setChartType('candles')" id="btnChartCandles" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 transition shadow">
+                                <i class="fa-solid fa-chart-simple mr-1"></i> Candle
+                            </button>
+                        </div>
+
+                        <!-- Timeframe Pills -->
+                        <div id="timeframeContainer" class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-0.5 text-xs font-mono font-bold text-slate-400">
+                            <button onclick="setTimeframe('M1')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">M1</button>
+                            <button onclick="setTimeframe('M5')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">M5</button>
+                            <button onclick="setTimeframe('M15')" class="tf-btn px-2 py-1 rounded-lg bg-slate-800 text-emerald-400 shadow">M15</button>
+                            <button onclick="setTimeframe('M30')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">M30</button>
+                            <button onclick="setTimeframe('H1')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">H1</button>
+                            <button onclick="setTimeframe('H4')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">H4</button>
+                            <button onclick="setTimeframe('D1')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">D1</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Overlay Indicators Toggle Toolbar -->
+                <div class="flex items-center gap-2 mb-2 text-xs font-semibold overflow-x-auto pb-1">
+                    <span class="text-slate-500 uppercase text-[10px] tracking-wider">Indicators:</span>
+                    <button onclick="toggleOverlay('ema20')" id="overlayEma20" class="px-2 py-0.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-400 text-[11px] hover:bg-amber-500/20 transition">EMA 20</button>
+                    <button onclick="toggleOverlay('ema50')" id="overlayEma50" class="px-2 py-0.5 rounded-md border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 text-[11px] hover:bg-cyan-500/20 transition">EMA 50</button>
+                    <button onclick="toggleOverlay('bollinger')" id="overlayBB" class="px-2 py-0.5 rounded-md border border-purple-500/40 bg-purple-500/10 text-purple-400 text-[11px] hover:bg-purple-500/20 transition">Bollinger</button>
+                    <button onclick="resetChartZoom()" class="ml-auto text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-arrows-rotate"></i> Reset Zoom
+                    </button>
+                </div>
+
+                <!-- Canvas Container -->
+                <div class="relative w-full h-[320px] sm:h-[380px] bg-slate-950/70 rounded-xl border border-slate-800/80 overflow-hidden cursor-crosshair">
+                    <canvas id="marketChartCanvas" class="w-full h-full block"></canvas>
+                    <div id="chartTooltip" class="absolute hidden pointer-events-none bg-slate-900/95 border border-slate-700 p-2 rounded-lg text-[11px] font-mono shadow-2xl z-20"></div>
+                </div>
+
+                <!-- Chart Footer Info -->
+                <div class="flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800/60">
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Bullish Candle</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Bearish Candle</span>
+                    </div>
+                    <div class="font-mono">
+                        <span id="chartTickCount">Ticks: 1,420</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MARKET BIAS (1 Column - Replicating & Expanding Screenshot) -->
+            <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-xl border border-slate-800/80">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">MARKET BIAS</h2>
+                            <p class="text-[11px] text-slate-500">Multi-Timeframe Trend Confluence</p>
+                        </div>
+                        <span id="overallBiasBadge" class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wide">
+                            BULLISH (72%)
+                        </span>
+                    </div>
+
+                    <!-- Timeframe Bias List -->
+                    <div id="biasListContainer" class="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
+                        <!-- Dynamic items generated via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Overall Summary Bar -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80">
+                    <div class="flex items-center justify-between text-xs mb-1.5 font-semibold">
+                        <span class="text-slate-400">Bullish vs Bearish Pressure</span>
+                        <span id="biasPercentageText" class="text-emerald-400 font-mono">75% Bullish</span>
+                    </div>
+                    <div class="w-full bg-red-500/30 rounded-full h-2.5 overflow-hidden flex">
+                        <div id="biasProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Middle Grid: Trade Setup Recommendation & Technical Gauges -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- TRADE SETUP RECOMMENDATION (1 Column) -->
+            <div class="glass-card rounded-2xl p-5 shadow-xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden">
+                <!-- Decorative background accent -->
+                <div id="signalBgGlow" class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">TRADE SETUP RECOMMENDATION</h2>
+                            <p class="text-[11px] text-slate-500">AI & Technical Confluence Engine</p>
+                        </div>
+                        <i class="fa-solid fa-robot text-slate-500 text-base"></i>
+                    </div>
+
+                    <!-- Signal Type Card -->
+                    <div id="signalCardBox" class="p-4 rounded-xl bg-gradient-to-br from-emerald-950/4
