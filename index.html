@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRADE INTELLIGENT - Gemini Real AI</title>
+    <style>
+        :root {
+            --bg-main: #0b0e14;
+            --bg-card: #131722;
+            --border-color: #2a2e39;
+            --text-main: #d1d4dc;
+            --text-muted: #787b86;
+            --green-bull: #089981;
+            --red-bear: #f23645;
+            --accent-blue: #2962ff;
+            --accent-purple: #9c27b0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-group h1 {
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .title-group p {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--green-bull);
+            display: inline-block;
+            box-shadow: 0 0 8px var(--green-bull);
+        }
+
+        .status-dot.offline {
+            background-color: var(--red-bear);
+            box-shadow: 0 0 8px var(--red-bear);
+        }
+
+        .ticker-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 10px;
+        }
+
+        select.symbol-select {
+            background: transparent;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select.symbol-select option {
+            background-color: var(--bg-card);
+            color: #fff;
+        }
+
+        .price-display { text-align: right; }
+
+        .live-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .price-change {
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .up { color: var(--green-bull); }
+        .down { color: var(--red-bear); }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 6px;
+        }
+
+        .btn-group {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn.active {
+            background-color: #2a2e39;
+            color: #ffffff;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            background: #0f121d;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* FITUR AI ENTRY SIGNAL (PERSIS GAMBAR + GEMINI AI) */
+        .ai-card {
+            border: 1px solid rgba(242, 54, 69, 0.4);
+            background: linear-gradient(180deg, rgba(20, 15, 25, 0.9) 0%, rgba(13, 17, 23, 1) 100%);
+        }
+
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .ai-title {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #f23645;
+        }
+
+        .ai-badge-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .conf-badge {
+            font-size: 10px;
+            font-weight: bold;
+            color: #f23645;
+            background: rgba(242, 54, 69, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .plan-badge {
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .signal-action {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .signal-action.sell { color: var(--red-bear); }
+        .signal-action.buy { color: var(--green-bull); }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .level-item span {
+            display: block;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .level-item p {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .engine-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .engine-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .engine-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .engine-status {
+            font-size: 9px;
+            background: rgba(8, 153, 129, 0.2);
+            color: var(--green-bull);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .drl-title {
+            font-size: 10px;
+            color: var(--accent-purple);
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .drl-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .drl-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 8px;
+            border-radius: 6px;
+        }
+
+        .drl-card span {
+            font-size: 8px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .drl-card p {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        .prob-section { margin-top: 8px; }
+
+        .prob-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .prob-bar-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .prob-bar-buy { height: 100%; background: var(--green-bull); transition: width 0.4s ease; }
+        .prob-bar-sell { height: 100%; background: var(--red-bear); transition: width 0.4s ease; }
+
+        .ai-reason-box {
+            font-size: 11px;
+            color: var(--text-main);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-purple);
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .btn-ai-analyze {
+            width: 100%;
+            background: linear-gradient(90deg, #2962ff 0%, #9c27b0 100%);
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-ai-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header Card -->
+    <div class="card">
+        <div class="header-top">
+            <div class="title-group">
+                <h1>TRADE INTELLIGENT AI</h1>
+                <p><span id="statusDot" class="status-dot"></span> <span id="statusText">Terhubung Gemini AI Live</span></p>
+            </div>
+        </div>
+
+        <div class="ticker-bar">
+            <select id="symbolSelect" class="symbol-select" onchange="changeSymbol()">
+                <option value="XAU/USD">XAU/USD (Emas)</option>
+                <option value="EUR/USD">EUR/USD</option>
+                <option value="GBP/USD">GBP/USD</option>
+                <option value="BTC/USD">BTC/USD</option>
+            </select>
+
+            <div class="price-display">
+                <div id="livePrice" class="live-price">$0.00</div>
+                <div id="priceChange" class="price-change up">+0.00%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Card -->
+    <div class="card">
+        <div class="controls-row">
+            <div class="btn-group">
+                <button class="btn" onclick="setTF('1min')">M1</button>
+                <button class="btn" onclick="setTF('5min')">M5</button>
+                <button class="btn active" onclick="setTF('15min')">M15</button>
+                <button class="btn" onclick="setTF('1h')">H1</button>
+                <button class="btn" onclick="setTF('1day')">D1</button>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="tradingChart"></canvas>
+        </div>
+    </div>
+
+    <!-- AI ENTRY SIGNAL CARD -->
+    <div class="card ai-card" id="aiCard">
+        <div class="ai-header">
+            <span class="ai-title">ENTRY SIGNAL</span>
+            <div class="ai-badge-group">
+                <span class="conf-badge" id="aiConf">● READY</span>
+                <span class="plan-badge">PLAN RR 1:2</span>
+            </div>
+        </div>
+
+        <div class="signal-action sell" id="aiSignalText">WAITING</div>
+
+        <div class="levels-grid">
+            <div class="level-item">
+                <span>ENTRY</span>
+                <p id="aiEntry" style="color: #fff;">0.00</p>
+            </div>
+            <div class="level-item">
+                <span>SL</span>
+                <p id="aiSL" style="color: var(--red-bear);">0.00</p>
+            </div>
+            <div class="level-item">
+                <span>TP</span>
+                <p id="aiTP" style="color: var(--green-bull);">0.00</p>
+            </div>
+        </div>
+
+        <div class="engine-box">
+            <div class="engine-top">
+                <div class="engine-name">
+                    <span class="status-dot"></span>
+                    <span>Gemini Neural Engine v.8</span>
+                </div>
+                <span class="engine-status">CAPACITY VERIFIED</span>
+            </div>
+
+            <div class="drl-title">⚙ DRL NEURON (PPO/SAC)</div>
+
+            <div class="drl-grid">
+                <div class="drl-card">
+                    <span>STATE VALUE V(s)</span>
+                    <p id="drlState">0.8400</p>
+                </div>
+                <div class="drl-card">
+                    <span>ADVANTAGE A(s,a)</span>
+                    <p id="drlAdvantage" style="color: var(--green-bull);">+0.7200</p>
+                </div>
+            </div>
+
+            <div class="prob-section">
+                <div class="prob-header">
+                    <span>PROBABILITAS POLICY π(a|s)</span>
+                    <span id="probLabel">BUY 50.0% | SELL 50.0%</span>
+                </div>
+                <div class="prob-bar-container">
+                    <div class="prob-bar-buy" id="barBuy" style="width: 50%;"></div>
+                    <div class="prob-bar-sell" id="barSell" style="width: 50%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-reason-box" id="aiReason">
+            Klik tombol di bawah untuk meminta Gemini AI melakukan analisa teknikal mendalam berdasarkan data candle real-time.
+        </div>
+
+        <button class="btn-ai-analyze" id="btnAnalyze" onclick="runGeminiAI()">🤖 MINTA AI ANALISA SEKARANG</button>
+    </div>
+</div>
+
+<script>
+    // HARDCODED API KEYS (SUDAH TERPASANG)
+    const TWELVE_DATA_KEY = 'a1aa29ae009744a9a68bebf6542a8ae0';
+    const GEMINI_API_KEY = 'AQ.Ab8RN6Jx8DJnaXfGzcgsVhB0e4UcqSsiG76IJxBdwySOBgA0Kg';
+
+    let currentSymbol = 'XAU/USD';
+    let currentInterval = '15min';
+    let candleData = [];
+
+    const canvas = document.getElementById('tradingChart');
+    const ctx = canvas.getContext('2d');
+
+    window.addEventListener('load', () => {
+        resizeCanvas();
+        fetchHistoricalData();
+    });
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        renderChart();
+    }
+
+    async function fetchHistoricalData() {
+        try {
+            const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(currentSymbol)}&interval=${currentInterval}&apikey=${TWELVE_DATA_KEY}&outputsize=30`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.values) {
+                candleData = data.values.reverse().map(d => ({
+                    open: parseFloat(d.open),
+                    high: parseFloat(d.high),
+                    low: parseFloat(d.low),
+                    close: parseFloat(d.close)
+                }));
+                const last = candleData[candleData.length - 1];
+                document.getElementById('livePrice').innerText = `$${last.close.toFixed(2)}`;
+                renderChart();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function runGeminiAI() {
+        if (candleData.length === 0) {
+            alert('Data pasar belum siap, mohon tunggu sebentar...');
+            return;
+        }
+
+        const btn = document.getElementById('btnAnalyze');
+        btn.disabled = true;
+        btn.innerText = '🔄 Gemini AI Sedang Menganalisa...';
+
+        const lastPrices = candleData.slice(-10).map(c => `Close:${c.close}, High:${c.high}, Low:${c.low}`).join(' | ');
+        const currentPrice = candleData[candleData.length - 1].close;
+
+        const promptText = `
+        Kamu adalah sistem AI trading kuantitatif profesional.
+        Analisa data pasar untuk pasangan ${currentSymbol} berikut:
+        Harga saat ini: ${currentPrice}
+        Data 10 Candle Terakhir: ${lastPrices}
+
+        Berikan respon HANYA dalam format JSON valid persis seperti struktur ini tanpa kata pembuka/penutup lainnya:
+        {
+          "signal": "BUY" atau "SELL",
+          "confidence": 89.0,
+          "entry": ${currentPrice},
+          "sl": angka_sl,
+          "tp": angka_tp,
+          "buyProb": 11.0,
+          "sellProb": 89.0,
+          "stateValue": 0.8400,
+          "advantage": "+0.7200",
+          "reasoning": "Alasan singkat analisa maksimal 2 kalimat"
+        }`;
+
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            const resData = await res.json();
+            const aiRaw = resData.candidates[0].content.parts[0].text;
+            const aiParsed = JSON.parse(aiRaw);
+
+            // Update UI dengan Hasil AI
+            const elSignal = document.getElementById('aiSignalText');
+            const elCard = document.getElementById('aiCard');
+            const elConf = document.getElementById('aiConf');
+
+            elSignal.innerText = aiParsed.signal;
+            if (aiParsed.signal === 'BUY') {
+                elSignal.className = 'signal-action buy';
+                elCard.style.borderColor = 'rgba(8, 153, 129, 0.4)';
+                elConf.style.color = '#089981';
+                elConf.style.background = 'rgba(8, 153, 129, 0.15)';
+            } else {
+                elSignal.className = 'signal-action sell';
+                elCard.style.borderColor = 'rgba(242, 54, 69, 0.4)';
+                elConf.style.color = '#f23645';
+                elConf.style.background = 'rgba(242, 54, 69, 0.15)';
+            }
+
+            elConf.innerText = `● ${aiParsed.confidence}% CONF.`;
+            document.getElementById('aiEntry').innerText = aiParsed.entry.toFixed(2);
+            document.getElementById('aiSL').innerText = aiParsed.sl.toFixed(2);
+            document.getElementById('aiTP').innerText = aiParsed.tp.toFixed(2);
+
+            document.getElementById('drlState').innerText = aiParsed.stateValue || '0.8400';
+            document.getElementById('drlAdvantage').innerText = aiParsed.advantage || '+0.7200';
+
+            document.getElementById('probLabel').innerText = `BUY ${aiParsed.buyProb}% | SELL ${aiParsed.sellProb}%`;
+            document.getElementById('barBuy').style.width = `${aiParsed.buyProb}%`;
+            document.getElementById('barSell').style.width = `${aiParsed.sellProb}%`;
+
+            document.getElementById('aiReason').innerText = `💡 Analisa AI: ${aiParsed.reasoning}`;
+
+        } catch (err) {
+            console.error(err);
+            alert('Terjadi kesalahan saat memanggil Gemini AI. Pastikan jaringan stabil!');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '🤖 MINTA AI ANALISA SEKARANG';
+        }
+    }
+
+    function renderChart() {
+        const width = canvas.width / window.devicePixelRatio;
+        const height = canvas.height / window.devicePixelRatio;
+        ctx.clearRect(0, 0, width, height);
+        if (candleData.length === 0) return;
+
+        let min = Math.min(...candleData.map(c => c.low));
+        let max = Math.max(...candleData.map(c => c.high));
+        const padding = (max - min) * 0.1 || 1;
+        min -= padding; max += padding;
+
+        const getY = (price) => height - ((price - mi) / (max - min)) * height;
+      const candleWidth = width / candleData.length;
+
+        candleData.forEach((c, i) => {
+            const x = i * candleWidth + candleWidth / 2;
+            const isBull = c.close >= c.open;
+            const color = isBull ? '#089981' : '#f23645';
+
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x, getY(c.high));
+            ctx.lineTo(x, getY(c.low));
+            ctx.stroke();
+
+            ctx.fillStyle = color;
+            const bodyY = Math.min(getY(c.open), getY(c.close));
+            const bodyHeight = Math.max(Math.abs(getY(c.open) - getY(c.close)), 2);
+            ctx.fillRect(x - candleWidth * 0.3, bodyY, candleWidth * 0.6, bodyHeight);
+        });
+    }
+
+    function changeSymbol() {
+        currentSymbol = document.getElementById('symbolSelect').value;
+        fetchHistoricalData();
+    }
+
+    function setTF(tf) {
+        currentInterval = tf;
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        fetchHistoricalData();
+    }
+</script>
+</body>
+</html>
