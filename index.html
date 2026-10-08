@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRADE INTELLIGENT - Live Market Analysis</title>
+    <style>
+        :root {
+            --bg-main: #0b0e14;
+            --bg-card: #131722;
+            --border-color: #2a2e39;
+            --text-main: #d1d4dc;
+            --text-muted: #787b86;
+            --green-bull: #089981;
+            --green-bull-bg: rgba(8, 153, 129, 0.15);
+            --red-bear: #f23645;
+            --red-bear-bg: rgba(242, 54, 69, 0.15);
+            --accent-blue: #2962ff;
+            --accent-yellow: #f5c518;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .title-group h1 {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        .title-group p {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--green-bull);
+            display: inline-block;
+            box-shadow: 0 0 8px var(--green-bull);
+        }
+
+        .status-dot.offline {
+            background-color: var(--red-bear);
+            box-shadow: 0 0 8px var(--red-bear);
+        }
+
+        .ticker-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        select.symbol-select {
+            background: transparent;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select.symbol-select option {
+            background-color: var(--bg-card);
+            color: #fff;
+        }
+
+        .price-display {
+            text-align: right;
+        }
+
+        .live-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            transition: color 0.3s;
+        }
+
+        .price-change {
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .up { color: var(--green-bull); }
+        .down { color: var(--red-bear); }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn.active {
+            background-color: #2a2e39;
+            color: #ffffff;
+        }
+
+        .btn-indicator {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 10px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .btn-indicator.active {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: rgba(41, 98, 255, 0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            background: #0f121d;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .chart-legend {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bias-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bias-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .tf-label {
+            font-weight: bold;
+            font-size: 12px;
+            width: 40px;
+        }
+
+        .bias-badge {
+            font-weight: bold;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-bullish {
+            background-color: var(--green-bull-bg);
+            color: var(--green-bull);
+            border: 1px solid rgba(8, 153, 129, 0.3);
+        }
+
+        .badge-bearish {
+            background-color: var(--red-bear-bg);
+            color: var(--red-bear);
+            border: 1px solid rgba(242, 54, 69, 0.3);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 14, 20, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="header-top">
+            <div class="title-group">
+                <h1>TRADE INTELLIGENT</h1>
+                <p><span id="statusDot" class="status-dot"></span> <span id="statusText">Menghubungkan ke Twelve Data...</span></p>
+            </div>
+        </div>
+
+        <div class="ticker-bar">
+            <select id="symbolSelect" class="symbol-select" onchange="changeSymbol()">
+                <option value="XAU/USD">XAU/USD (Emas)</option>
+                <option value="EUR/USD">EUR/USD</option>
+                <option value="GBP/USD">GBP/USD</option>
+                <option value="BTC/USD">BTC/USD</option>
+            </select>
+
+            <div class="price-display">
+                <div id="livePrice" class="live-price">$0.00</div>
+                <div id="priceChange" class="price-change up">+0.00%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="controls-row">
+            <div class="btn-group">
+                <button class="btn" onclick="setChartType('line')" id="btnLine">Garis</button>
+                <button class="btn active" onclick="setChartType('candle')" id="btnCandle">Lilin</button>
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="setTF('1min')">M1</button>
+                <button class="btn" onclick="setTF('5min')">M5</button>
+                <button class="btn active" onclick="setTF('15min')">M15</button>
+                <button class="btn" onclick="setTF('1h')">H1</button>
+                <button class="btn" onclick="setTF('1day')">D1</button>
+            </div>
+        </div>
+
+        <div class="controls-row">
+            <button class="btn-indicator active" id="toggleEma20" onclick="toggleIndicator('ema20')">EMA 20</button>
+            <button class="btn-indicator active" id="toggleEma50" onclick="toggleIndicator('ema50')">EMA 50</button>
+        </div>
+
+        <div class="chart-container">
+            <div id="loadingOverlay" class="loading-overlay">Memuat data pasar...</div>
+            <div class="chart-legend">
+                <span style="color: #f5c518;">— EMA 20</span>
+                <span style="color: #2962ff;">— EMA 50</span>
+            </div>
+            <canvas id="tradingChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">
+            <span>BIAS PASAR MULTI-TIMEFRAME</span>
+            <span id="biasOverall" style="color: var(--green-bull);">NETRAL</span>
+        </div>
+
+        <div class="bias-list">
+            <div class="bias-item">
+                <span class="tf-label">H1</span>
+                <span id="biasH1" class="bias-badge badge-bullish">BULLISH</span>
+            </div>
+            <div class="bias-item">
+                <span class="tf-label">M15</span>
+                <span id="biasM15" class="bias-badge badge-bullish">BULLISH</span>
+            </div>
+            <div class="bias-item">
+                <span class="tf-label">M5</span>
+                <span id="biasM5" class="bias-badge badge-bearish">BEARISH</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_KEY = 'a1aa29ae009744a9a68bebf6542a8ae0';
+    let currentSymbol = 'XAU/USD';
+    let currentInterval = '15min';
+    let chartType = 'candle';
+    
+    let candleData = [];
+    let ws = null;
+    let showEma20 = true;
+    let showEma50 = true;
+
+    const canvas = document.getElementById('tradingChart');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        renderChart();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    async function fetchHistoricalData() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        try {
+            const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(currentSymbol)}&interval=${currentInterval}&apikey=${API_KEY}&outputsize=40`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.status === 'error' || !data.values) {
+                console.error("API Error:", data.message);
+                document.getElementById('statusText').innerText = "Gagal memuat API";
+                return;
+            }
+
+            candleData = data.values.reverse().map(d => ({
+                open: parseFloat(d.open),
+                high: parseFloat(d.high),
+                low: parseFloat(d.low),
+                close: parseFloat(d.close),
+                time: d.datetime
+            }));
+
+            if (candleData.length > 0) {
+                const last = candleData[candleData.length - 1];
+                const prev = candleData[candleData.length - 2] || last;
+                updatePriceDisplay(last.close, prev.close);
+            }
+
+            calculateBias();
+            renderChart();
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            document.getElementById('loadingOverlay').innerText = "Koneksi Terputus";
+        }
+    }
+
+    function initWebSocket() {
+        if (ws) ws.close();
+
+        ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${API_KEY}`);
+
+        ws.onopen = () => {
+            document.getElementById('statusDot').classList.remove('offline');
+            document.getElementById('statusText').innerText = 'Terhubung Live';
+            
+            ws.send(JSON.stringify({
+                "action": "subscribe",
+                "params": { "symbols": currentSymbol }
+            }));
+        };
+
+        ws.onmessage = (event) => {
+            const response = JSON.parse(event.data);
+            if (response.event === 'price' && response.symbol === currentSymbol) {
+                const newPrice = parseFloat(response.price);
+                onLiveTick(newPrice);
+            }
+        };
+
+        ws.onerror = () => {
+            document.getElementById('statusDot').classList.add('offline');
+            document.getElementById('statusText').innerText = 'Koneksi Error';
+        };
+
+        ws.onclose = () => {
+            document.getElementById('statusDot').classList.add('offline');
+            document.getElementById('statusText').innerText = 'Terputus (Retrying...)';
+            setTimeout(initWebSocket, 5000);
+        };
+    }
+
+    function onLiveTick(price) {
+        if (candleData.length === 0) return;
+
+        const lastCandle = candleData[candleData.length - 1];
+        const prevPrice = lastCandle.close;
+
+        lastCandle.close = price;
+        if (price > lastCandle.high) lastCandle.high = price;
+        if (price < lastCandle.low) lastCandle.low = price;
+
+        updatePriceDisplay(price, prevPrice);
+        renderChart();
+    }
+
+    function updatePriceDisplay(price, prevPrice) {
+        const elPrice = document.getElementById('livePrice');
+        const elChange = document.getElementById('priceChange');
+
+        elPrice.innerText = `$${price.toFixed(2)}`;
+        
+        const diff = price - prevPrice;
+        const percent = ((diff / prevPrice) * 100).toFixed(2);
+
+        if (diff >= 0) {
+            elPrice.style.color = '#089981';
+            elChange.innerText = `+${percent}%`;
+            elChange.className = 'price-change up';
+        } else {
+            elPrice.style.color = '#f23645';
+            elChange.innerText = `${percent}%`;
+            elChange.className = 'price-change down';
+        }
+    }
+
+    function calculateEMA(period) {
+        if (candleData.length < period) return [];
+        const k = 2 / (period + 1);
+        let ema = [];
+        let sum = 0;
+
+        for (let i = 0; i < period; i++) sum += candleData[i].close;
+        ema[period - 1] = sum / period;
+
+        for (let i = period; i < candleData.length; i++) {
+            ema[i] = (candleData[i].close * k) + (ema[i - 1] * (1 - k));
+        }
+        return ema;
+    }
+
+    function renderChart() {
+        const width = canvas.width / window.devicePixelRatio;
+        const height = canvas.height / window.devicePixelRatio;
+
+        ctx.clearRect(0, 0, width, height);
+        if (candleData.length === 0) return;
+
+        let minPrice = Math.min(...candleData.map(c => c.low));
+        let maxPrice = Math.max(...candleData.map(c => c.high));
+        const padding = (maxPrice - minPrice) * 0.1 || 1;
+        minPrice -= padding;
+        maxPrice += padding;
+
+        const getY = (price) => height - ((price - minPrice) / (maxPrice - minPrice)) * height;
+        const candleWidth = width / candleData.length;
+
+        ctx.strokeStyle = '#1e222d';
+        ctx.lineWidth = 1;
+        for (let i = 1; i < 5; i++) {
+            const y = (height / 5) * i;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        if (chartType === 'candle') {
+            candleData.forEach((c, i) => {
+                const x = i * candleWidth + candleWidth / 2;
+                const openY = getY(c.open);
+                const closeY = getY(c.close);
+                const highY = getY(c.high);
+                const lowY = getY(c.low);
+
+                const isBull = c.close >= c.open;
+                const color = isBull ? '#089981' : '#f23645';
+
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, highY);
+                ctx.lineTo(x, lowY);
+                ctx.stroke();
+
+                ctx.fillStyle = color;
+                const bodyY = Math.min(openY, closeY);
+                const bodyHeight = Math.max(Math.abs(openY - closeY), 2);
+                ctx.fillRect(x - candleWidth * 0.3, bodyY, candleWidth * 0.6, bodyHeight);
+            });
+        } else {
+            ctx.strokeStyle = '#089981';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            candleData.forEach((c, i) => {
+                const x = i * candleWidth + candleWidth / 2;
+                const y = getY(c.close);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        if (showEma20) drawEMALine(calculateEMA(20), '#f5c518', getY, candleWidth);
+        if (showEma50) drawEMALine(calculateEMA(50), '#2962ff', getY, candleWidth);
+    }
+
+    function drawEMALine(emaValues, color, getY, candleWidth) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        let started = false;
+
+        emaValues.forEach((val, i) => {
+            if (val !== undefined) {
+                const x = i * candleWidth + candleWidth / 2;
+                const y = getY(val);
+                if (!started) { ctx.moveTo(x, y); started = true; }
+                else ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+    }
+
+    function calculateBias() {
+        if (candleData.length < 5) return;
+        const last = candleData[candleData.length - 1].close;
+        const prev = candleData[candleData.length - 5].close;
+
+        const isBullish = last >= prev;
+        const badgeClass = isBullish ? 'bias-badge badge-bullish' : 'bias-badge badge-bearish';
+        const text = isBullish ? 'BULLISH' : 'BEARISH';
+
+        document.getElementById('biasH1').className = badgeClass;
+        document.getElementById('biasH1').innerText = text;
+        document.getElementById('biasM15').className = badgeClass;
+        document.getElementById('biasM15').innerText = text;
+    }
+
+    function changeSymbol() {
+        currentSymbol = document.getElementById('symbolSelect').value;
+        fetchHistoricalData();
+        initWebSocket();
+    }
+
+    function setTF(tf) {
+        currentInterval = tf;
+        document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        fetchHistoricalData();
+    }
+
+    function setChartType(type) {
+        chartType = type;
+        document.getElementById('btnLine').classList.toggle('active', type === 'line');
+        document.getElementById('btnCandle').classList.toggle('active', type === 'candle');
+        renderChart();
+    }
+
+    function toggleIndicator(ind) {
+        if (ind === 'ema20') {
+            showEma20 = !showEma20;
+            document.getElementById('toggleEma20').classList.toggle('active', showEma20);
+        } else if (ind === 'ema50') {
+            showEma50 = !showEma50;
+            document.getElementById('toggleEma50').classList.toggle('active', showEma50);
+        }
+        renderChart();
+      }
+
+    window.onload = () => {
+        resizeCanvas();
+        fetchHistoricalData();
+        initWebSocket();
+    };
+</script>
+</body>
+</html>
