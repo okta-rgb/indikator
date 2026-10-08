@@ -1,1 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Trade Intelligent</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #0b0f14;
+    color: #fff;
+    padding: 16px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.header {
+    background: #111820;
+    border: 1px solid #26313d;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.subtitle {
+    color: #8c98a5;
+    margin-top: 5px;
+}
+
+.card {
+    background: #111820;
+    border: 1px solid #26313d;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+
+.card-title {
+    color: #9aa7b5;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.chart {
+    height: 300px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background:
+        linear-gradient(#18212b 1px, transparent 1px),
+        linear-gradient(90deg, #18212b 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.line {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+svg {
+    width: 100%;
+    height: 100%;
+}
+
+.timeframes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.tf {
+    background: #151e27;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+}
+
+.tf-name {
+    color: #8c98a5;
+    font-size: 12px;
+}
+
+.tf-value {
+    margin-top: 8px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.bullish {
+    color: #35d07f;
+}
+
+.bearish {
+    color: #ff5c6c;
+}
+
+.signal {
+    text-align: center;
+    padding: 25px;
+}
+
+.signal-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ff5c6c;
+}
+
+.confidence {
+    margin-top: 10px;
+    color: #9aa7b5;
+}
+
+.confidence span {
+    color: #fff;
+    font-weight: bold;
+}
+
+.prices {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.price-box {
+    background: #151e27;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.price-label {
+    color: #8c98a5;
+    font-size: 12px;
+}
+
+.price-value {
+    margin-top: 8px;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.footer {
+    text-align: center;
+    color: #65717d;
+    font-size: 12px;
+    padding: 10px;
+}
+
+@media(max-width: 650px) {
+    .prices {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .timeframes {
+        grid-template-columns: 1fr;
+    }
+
+    .chart {
+        height: 250px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="logo">TRADE INTELLIGENT</div>
+        <div class="subtitle">XAUUSD • GOLD • Market Analysis</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">MARKET CHART</div>
+
+        <div class="chart">
+            <svg viewBox="0 0 1000 300" preserveAspectRatio="none">
+
+                <polyline
+                    points="
+                    0,220
+                    70,200
+                    130,215
+                    190,170
+                    250,185
+                    310,140
+                    370,155
+                    430,120
+                    490,135
+                    550,90
+                    610,110
+                    670,70
+                    730,95
+                    790,55
+                    850,80
+                    910,45
+                    1000,65"
+                    fill="none"
+                    stroke="#35d07f"
+                    stroke-width="4"
+                />
+
+            </svg>
+        </div>
+    </div>
+
+    <div class="card">
+
+        <div class="card-title">MARKET BIAS</div>
+
+        <div class="timeframes">
+
+            <div class="tf">
+                <div class="tf-name">H1</div>
+                <div class="tf-value bullish">BULLISH</div>
+            </div>
+
+            <div class="tf">
+                <div class="tf-name">M15</div>
+                <div class="tf-value bullish">BULLISH</div>
+            </div>
+
+            <div class="tf">
+                <div class="tf-name">M5</div>
+                <div class="tf-value bearish">BEARISH</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card signal">
+
+        <div class="card-title">CURRENT SIGNAL</div>
+
+        <div class="signal-name">SIMULATION SELL</div>
+
+        <div class="confidence">
+            Confidence:
+            <span>82%</span>
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="card-title">TRADE LEVELS — SIMULATION</div>
+
+        <div class="prices">
+
+            <div class="price-box">
+                <div class="price-label">ENTRY</div>
+                <div class="price-value">4,124.50</div>
+            </div>
+
+            <div class="price-box">
+                <div class="price-label">SL</div>
+                <div class="price-value">4,129.50</div>
+            </div>
+
+            <div class="price-box">
+                <div class="price-label">TP 1</div>
+                <div class="price-value">4,119.50</div>
+            </div>
+
+            <div class="price-box">
+                <div class="price-label">TP 2</div>
+                <div class="price-value">4,114.50</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Trade Intelligent • Educational Market Analysis Dashboard
+    </div>
+
+</div>
+
+</body>
+  </html>
