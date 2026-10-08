@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRADE INTELLIGENT - Forex & Gold Market Analysis</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#151c2c',
+                            600: '#1e293b',
+                            500: '#334155'
+                        },
+                        bullish: '#10b981',
+                        bearish: '#ef4444',
+                        accent: '#3b82f6'
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow-green': 'glowGreen 1.5s infinite alternate',
+                        'glow-red': 'glowRed 1.5s infinite alternate',
+                    },
+                    keyframes: {
+                        glowGreen: {
+                            '0%': { boxShadow: '0 0 5px rgba(16, 185, 129, 0.2)' },
+                            '100%': { boxShadow: '0 0 20px rgba(16, 185, 129, 0.6)' }
+                        },
+                        glowRed: {
+                            '0%': { boxShadow: '0 0 5px rgba(239, 68, 68, 0.2)' },
+                            '100%': { boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars and glow utility classes */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .price-up {
+            color: #10b981 !important;
+            animation: flashGreen 0.4s ease-out;
+        }
+        .price-down {
+            color: #ef4444 !important;
+            animation: flashRed 0.4s ease-out;
+        }
+        @keyframes flashGreen {
+            0% { background-color: rgba(16, 185, 129, 0.25); }
+            100% { background-color: transparent; }
+        }
+        @keyframes flashRed {
+            0% { background-color: rgba(239, 68, 68, 0.25); }
+            100% { background-color: transparent; }
+        }
+        .glass-card {
+            background: rgba(21, 28, 44, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-400">
+
+    <!-- Top Navigation / Header -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Logo & Brand -->
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-chart-line text-slate-950 font-bold text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent uppercase">
+                            TRADE INTELLIGENT
+                        </h1>
+                        <p class="text-xs text-emerald-400 font-medium tracking-wide flex items-center gap-1.5">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="headerSymbolText">XAUUSD</span> • GOLD • Live Market Analysis
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mobile Quick Controls -->
+                <div class="flex items-center gap-2 md:hidden">
+                    <button id="soundToggleBtnMobile" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800/80 text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                    </button>
+                    <button onclick="toggleSimulation()" id="simToggleMobile" class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition text-xs font-semibold">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pair Selector & Live Price Stats -->
+            <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto overflow-x-auto py-1">
+                
+                <!-- Pair Dropdown -->
+                <div class="relative">
+                    <select id="symbolSelect" onchange="changeSymbol(this.value)" class="bg-slate-900 border border-slate-700/80 text-slate-100 font-bold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-inner">
+                        <option value="XAUUSD" selected>XAUUSD (Gold)</option>
+                        <option value="EURUSD">EURUSD (Euro)</option>
+                        <option value="GBPUSD">GBPUSD (GBP)</option>
+                        <option value="BTCUSD">BTCUSD (Bitcoin)</option>
+                        <option value="US30">US30 (Dow Jones)</option>
+                    </select>
+                </div>
+
+                <!-- Price Ticker Box -->
+                <div class="flex items-center gap-3 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-xl">
+                    <div>
+                        <div class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Live Price</div>
+                        <div id="livePriceDisplay" class="font-mono text-base font-bold text-emerald-400 transition-colors duration-200">
+                            $2,654.80
+                        </div>
+                    </div>
+                    <div class="border-l border-slate-800 pl-3">
+                        <div class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">24h Chg</div>
+                        <div id="priceChangeDisplay" class="font-mono text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                            <i class="fa-solid fa-caret-up"></i> +1.24%
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clock & Control Buttons (Desktop) -->
+                <div class="hidden lg:flex items-center gap-3">
+                    <div class="text-right">
+                        <div id="liveClockTime" class="font-mono text-sm font-semibold text-slate-200">15:35:12</div>
+                        <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">UTC+7 (Jakarta)</div>
+                    </div>
+
+                    <button id="soundToggleBtn" onclick="toggleSound()" title="Sound Notifications" class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-slate-700 transition">
+                        <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
+                    </button>
+
+                    <button id="simToggleBtn" onclick="toggleSimulation()" title="Pause/Resume Simulation" class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span id="simStatusText">LIVE SIM</span>
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- Top Market Banner Alert -->
+        <div class="glass-card rounded-xl p-3 px-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-l-4 border-l-emerald-500">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                    <i class="fa-solid fa-bullhorn text-sm"></i>
+                </div>
+                <div class="text-xs">
+                    <span class="font-bold text-slate-100">Market Insight:</span> 
+                    <span id="marketInsightText" class="text-slate-300">XAUUSD showing bullish momentum above $2,645 support level. High volatility expected around US CPI Release.</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Spread:</span>
+                <span id="liveSpread" class="text-xs font-mono font-bold text-slate-200 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">0.15 pts</span>
+            </div>
+        </div>
+
+        <!-- Upper Grid: Main Chart & Market Bias side-by-side -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- MARKET CHART (2 Columns) -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-xl relative overflow-hidden">
+                
+                <!-- Chart Header Controls -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-800/80 pb-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">MARKET CHART</h2>
+                            <span id="activeChartPairBadge" class="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md uppercase">XAUUSD • M15</span>
+                        </div>
+                        <div id="chartOHLCDisplay" class="font-mono text-xs text-slate-300 mt-1 flex flex-wrap gap-2">
+                            <span>O: <strong id="ohlcO" class="text-white">$2,652.10</strong></span>
+                            <span>H: <strong id="ohlcH" class="text-emerald-400">$2,658.40</strong></span>
+                            <span>L: <strong id="ohlcL" class="text-red-400">$2,650.00</strong></span>
+                            <span>C: <strong id="ohlcC" class="text-emerald-400">$2,654.80</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Chart Options & Timeframe Toolbar -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        
+                        <!-- Chart Type Switcher -->
+                        <div class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                            <button onclick="setChartType('line')" id="btnChartLine" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                                <i class="fa-solid fa-chart-line mr-1"></i> Line
+                            </button>
+                            <button onclick="setChartType('candles')" id="btnChartCandles" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 transition shadow">
+                                <i class="fa-solid fa-chart-simple mr-1"></i> Candle
+                            </button>
+                        </div>
+
+                        <!-- Timeframe Pills -->
+                        <div id="timeframeContainer" class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-0.5 text-xs font-mono font-bold text-slate-400">
+                            <button onclick="setTimeframe('M1')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">M1</button>
+                            <button onclick="setTimeframe('M5')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">M5</button>
+                            <button onclick="setTimeframe('M15')" class="tf-btn px-2 py-1 rounded-lg bg-slate-800 text-emerald-400 shadow">M15</button>
+                            <button onclick="setTimeframe('M30')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">M30</button>
+                            <button onclick="setTimeframe('H1')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">H1</button>
+                            <button onclick="setTimeframe('H4')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">H4</button>
+                            <button onclick="setTimeframe('D1')" class="tf-btn px-2 py-1 rounded-lg hover:text-white">D1</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Overlay Indicators Toggle Toolbar -->
+                <div class="flex items-center gap-2 mb-2 text-xs font-semibold overflow-x-auto pb-1">
+                    <span class="text-slate-500 uppercase text-[10px] tracking-wider">Indicators:</span>
+                    <button onclick="toggleOverlay('ema20')" id="overlayEma20" class="px-2 py-0.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-400 text-[11px] hover:bg-amber-500/20 transition">EMA 20</button>
+                    <button onclick="toggleOverlay('ema50')" id="overlayEma50" class="px-2 py-0.5 rounded-md border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 text-[11px] hover:bg-cyan-500/20 transition">EMA 50</button>
+                    <button onclick="toggleOverlay('bollinger')" id="overlayBB" class="px-2 py-0.5 rounded-md border border-purple-500/40 bg-purple-500/10 text-purple-400 text-[11px] hover:bg-purple-500/20 transition">Bollinger</button>
+                    <button onclick="resetChartZoom()" class="ml-auto text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-arrows-rotate"></i> Reset Zoom
+                    </button>
+                </div>
+
+                <!-- Canvas Container -->
+                <div class="relative w-full h-[320px] sm:h-[380px] bg-slate-950/70 rounded-xl border border-slate-800/80 overflow-hidden cursor-crosshair">
+                    <canvas id="marketChartCanvas" class="w-full h-full block"></canvas>
+                    <div id="chartTooltip" class="absolute hidden pointer-events-none bg-slate-900/95 border border-slate-700 p-2 rounded-lg text-[11px] font-mono shadow-2xl z-20"></div>
+                </div>
+
+                <!-- Chart Footer Info -->
+                <div class="flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-800/60">
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Bullish Candle</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Bearish Candle</span>
+                    </div>
+                    <div class="font-mono">
+                        <span id="chartTickCount">Ticks: 1,420</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MARKET BIAS (1 Column - Replicating & Expanding Screenshot) -->
+            <div class="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-xl border border-slate-800/80">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">MARKET BIAS</h2>
+                            <p class="text-[11px] text-slate-500">Multi-Timeframe Trend Confluence</p>
+                        </div>
+                        <span id="overallBiasBadge" class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wide">
+                            BULLISH (72%)
+                        </span>
+                    </div>
+
+                    <!-- Timeframe Bias List -->
+                    <div id="biasListContainer" class="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
+                        <!-- Dynamic items generated via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Overall Summary Bar -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80">
+                    <div class="flex items-center justify-between text-xs mb-1.5 font-semibold">
+                        <span class="text-slate-400">Bullish vs Bearish Pressure</span>
+                        <span id="biasPercentageText" class="text-emerald-400 font-mono">75% Bullish</span>
+                    </div>
+                    <div class="w-full bg-red-500/30 rounded-full h-2.5 overflow-hidden flex">
+                        <div id="biasProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Middle Grid: Trade Setup Recommendation & Technical Gauges -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- TRADE SETUP RECOMMENDATION (1 Column) -->
+            <div class="glass-card rounded-2xl p-5 shadow-xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden">
+                <!-- Decorative background accent -->
+                <div id="signalBgGlow" class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">TRADE SETUP RECOMMENDATION</h2>
+                            <p class="text-[11px] text-slate-500">AI & Technical Confluence Engine</p>
+                        </div>
+                        <i class="fa-solid fa-robot text-slate-500 text-base"></i>
+                    </div>
+
+                    <!-- Signal Type Card -->
+                    <div id="signalCardBox" class="p-4 rounded-xl bg-gradient-to-br from-emerald-950/40 to-slate-900 border border-emerald-500/30 text-center mb-4 relative">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Generated Signal</div>
+                        <div id="signalTitle" class="text-2xl font-black text-emerald-400 tracking-wider uppercase drop-shadow">
+                            STRONG BUY
+                        </div>
+                        <div class="text-xs text-slate-300 mt-1 flex items-center justify-center gap-2">
+                            <span>Confidence: <strong id="signalConfidence" class="text-emerald-400 font-mono">88%</strong></span>
+                            <span>•</span>
+                            <span id="signalTime">15 mins ago</span>
+                        </div>
+                    </div>
+
+                    <!-- Price Targets Grid -->
+                    <div class="space-y-2.5 font-mono text-xs">
+                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+                            <span class="text-slate-400 font-sans font-semibold">Entry Zone:</span>
+                            <span id="targetEntry" class="font-bold text-slate-100">$2,652.50 - $2,654.00</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-red-950/20 border border-red-500/30">
+                            <span class="text-red-400 font-sans font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-shield-halved text-xs"></i> Stop Loss (SL):
+                            </span>
+                            <span id="targetSL" class="font-bold text-red-400">$2,644.00 (-85 pips)</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
+                            <span class="text-emerald-400 font-sans font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-bullseye text-xs"></i> Take Profit 1 (TP1):
+                            </span>
+                            <span id="targetTP1" class="font-bold text-emerald-400">$2,666.00 (+135 pips)</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/40">
+                            <span class="text-emerald-300 font-sans font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-trophy text-xs"></i> Take Profit 2 (TP2):
+                            </span>
+                            <span id="targetTP2" class="font-bold text-emerald-300">$2,680.00 (+275 pips)</span>
+                        </div>
+                    </div>
+
+                    <!-- Risk/Reward & Copy Button -->
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <div class="text-xs">
+                            <div class="text-slate-400 text-[10px] uppercase font-semibold">Risk / Reward</div>
+                            <div id="rrRatioText" class="font-mono font-extrabold text-emerald-400">1 : 2.5 font-bold</div>
+                        </div>
+
+                        <button onclick="copyTradeSignal()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                            <i class="fa-regular fa-copy"></i> Copy Signal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TECHNICAL INDICATORS SUMMARY (2 Columns) -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-5 shadow-xl border border-slate-800/80 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">TECHNICAL INDICATORS SUMMARY</h2>
+                            <p class="text-[11px] text-slate-500">Real-time Oscillator & Moving Average Signals</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs font-bold">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">12 Buy</span>
+                            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">2 Neutral</span>
+                            <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400">2 Sell</span>
+                        </div>
+                    </div>
+
+                    <!-- Oscillators Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">RSI (14)</div>
+                            <div id="indRSIVal" class="font-mono text-base font-bold text-slate-100 my-0.5">64.2</div>
+                            <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Bullish</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">MACD (12,26)</div>
+                            <div id="indMACDVal" class="font-mono text-base font-bold text-emerald-400 my-0.5">+2.45</div>
+                            <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">BUY Signal</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Stochastic %K</div>
+                            <div id="indStochVal" class="font-mono text-base font-bold text-slate-100 my-0.5">71.8</div>
+                            <span class="text-[10px] font-semibold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">Neutral</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">ADX (14) Trend</div>
+                            <div id="indADXVal" class="font-mono text-base font-bold text-emerald-400 my-0.5">38.5</div>
+                            <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Strong Trend</span>
+                        </div>
+                    </div>
+
+                    <!-- Moving Averages Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead>
+                                <tr class="text-[10px] text-slate-400 uppercase border-b border-slate-800">
+                                    <th class="pb-2 font-semibold">Moving Avg</th>
+                                    <th class="pb-2 font-semibold">Value</th>
+                                    <th class="pb-2 font-semibold">Condition</th>
+                                    <th class="pb-2 font-semibold text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-300" id="maTableBody">
+                                <!-- Dynamic MA rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Lower Grid: Dynamic Pivot Points & Position Risk Calculator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- DYNAMIC PIVOT POINTS CARD -->
+            <div class="glass-card rounded-2xl p-5 shadow-xl border border-slate-800/80">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+                    <div>
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">KEY PIVOT POINTS (DAILY)</h2>
+                        <p class="text-[11px] text-slate-500">Floor Trader Pivots & Dynamic Levels</p>
+                    </div>
+                    <span class="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">Standard</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                    <!-- Resistance Levels -->
+                    <div class="space-y-2">
+                        <div class="p-2.5 rounded-xl bg-red-950/20 border border-red-500/20 flex justify-between items-center">
+                            <span class="font-bold text-red-400 font-sans">Resistance 3 (R3)</span>
+                            <span id="pivotR3" class="font-extrabold text-red-300">$2,688.50</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-red-950/15 border border-red-500/20 flex justify-between items-center">
+                            <span class="font-bold text-red-400 font-sans">Resistance 2 (R2)</span>
+                            <span id="pivotR2" class="font-extrabold text-red-400">$2,674.10</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-red-950/10 border border-red-500/20 flex justify-between items-center">
+                            <span class="font-bold text-red-400 font-sans">Resistance 1 (R1)</span>
+                            <span id="pivotR1" class="font-extrabold text-red-400">$2,662.80</span>
+                        </div>
+                    </div>
+
+                    <!-- Pivot & Support Levels -->
+                    <div class="space-y-2">
+                        <div class="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 flex justify-between items-center">
+                            <span class="font-bold text-amber-400 font-sans">Pivot Point (PP)</span>
+                            <span id="pivotPP" class="font-extrabold text-amber-300">$2,648.50</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-emerald-950/10 border border-emerald-500/20 flex justify-between items-center">
+                            <span class="font-bold text-emerald-400 font-sans">Support 1 (S1)</span>
+                            <span id="pivotS1" class="font-extrabold text-emerald-400">$2,637.20</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-emerald-950/15 border border-emerald-500/20 flex justify-between items-center">
+                            <span class="font-bold text-emerald-400 font-sans">Support 2 (S2)</span>
+                            <span id="pivotS2" class="font-extrabold text-emerald-400">$2,622.90</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POSITION SIZE & RISK CALCULATOR CARD -->
+            <div class="glass-card rounded-2xl p-5 shadow-xl border border-slate-800/80 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">RISK & LOT SIZE CALCULATOR</h2>
+                            <p class="text-[11px] text-slate-500">Professional Money Management Tool</p>
+                        </div>
+                        <i class="fa-solid fa-calculator text-emerald-400"></i>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Account Balance ($)</label>
+                            <input type="number" id="calcBalance" value="1000" oninput="calculateLotSize()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-100 focus:border-emerald-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Risk per Trade (%)</label>
+                            <input type="number" id="calcRiskPct" value="2" step="0.5" oninput="calculateLotSize()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-emerald-400 focus:border-emerald-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Stop Loss (Pips / Pts)</label>
+                            <input type="number" id="calcSLPips" value="85" oninput="calculateLotSize()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-red-400 focus:border-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Calculated Output Box -->
+                    <div class="p-3 bg-slate-900/90 border border-slate-800 rounded-xl grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Recommended Lot Size</div>
+                            <div id="calcLotResult" class="font-mono text-xl font-black text-emerald-400">0.02 Lots</div>
+                        </div>
+                        <div class="border-l border-slate-800">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase">Risk Amount ($)</div>
+                            <div id="calcRiskValResult" class="font-mono text-xl font-black text-red-400">$20.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-2 text-[11px] text-slate-500 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-emerald-400"></i>
+                    <span>Formula adjusted for Gold (XAUUSD $10 per pip/lot standard) and standard Forex pairs.</span>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-4 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                &copy; 2026 <strong class="text-slate-300">TRADE INTELLIGENT</strong>. Advanced Market Indicators & Analytics.
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="hover:text-emerald-400 transition cursor-pointer"><i class="fa-solid fa-shield-halved mr-1"></i> Disclaimer: Trading carries risk.</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // Global Application State
+        const state = {
+            symbol: 'XAUUSD',
+            timeframe: 'M15',
+            chartType: 'candles', // 'candles' or 'line'
+            soundEnabled: true,
+            isSimulating: true,
+            overlays: {
+                ema20: true,
+                ema50: true,
+                bollinger: false
+            },
+            currentPrice: 2654.80,
+            basePrices: {
+                'XAUUSD': 2654.80,
+                'EURUSD': 1.0850,
+                'GBPUSD': 1.2980,
+                'BTCUSD': 64200.00,
+                'US30': 42800.00
+            },
+            priceDecimals: {
+                'XAUUSD': 2,
+                'EURUSD': 5,
+                'GBPUSD': 5,
+                'BTCUSD': 2,
+                'US30': 1
+            },
+            chartData: [],
+            tickCount: 1420
+        };
+
+        // Web Audio API Context for sound effects
+        let audioCtx = null;
+
+        function playBeep(freq = 600, duration = 0.08, type = 'sine') {
+            if (!state.soundEnabled) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.warn('Audio play error:', e);
+            }
+        }
+
+        const canvas = document.getElementById('marketChartCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            renderChart();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Generate synthetic historical candles based on active symbol
+        function generateHistoricalData(symbol, count = 50) {
+            let price = state.basePrices[symbol];
+            const volatility = price * 0.0015;
+            const data = [];
+            let now = Date.now() - count * 60 * 1000;
+
+            for (let i = 0; i < count; i++) {
+                const change = (Math.random() - 0.48) * volatility;
+                const open = price;
+                const close = open + change;
+                const high = Math.max(open, close) + Math.random() * volatility * 0.5;
+                const low = Math.min(open, close) - Math.random() * volatility * 0.5;
+                price = close;
+
+                data.push({
+                    time: now + i * 60 * 1000,
+                    open,
+                    high,
+                    low,
+                    close
+                });
+            }
+            state.currentPrice = data[data.length - 1].close;
+            state.chartData = data;
+        }
+
+        // Calculate EMA array
+        function calculateEMA(data, period) {
+            const k = 2 / (period + 1);
+            let emaArray = [];
+            let ema = data[0].close;
+
+            for (let i = 0; i < data.length; i++) {
+                ema = (data[i].close * k) + (ema * (1 - k));
+                emaArray.push(ema);
+            }
+            return emaArray;
+        }
+
+        // Render Canvas Chart
+        function renderChart() {
+            if (!state.chartData || state.chartData.length === 0) return;
+
+            const w = canvas.parentElement.clientWidth;
+            const h = canvas.parentElement.clientHeight;
+            ctx.clearRect(0, 0, w, h);
+
+            const data = state.chartData;
+            const padding = { top: 20, bottom: 20, left: 10, right: 60 };
+            const chartW = w - padding.left - padding.right;
+            const chartH = h - padding.top - padding.bottom;
+
+            // Find High and Low
+            let minPrice = Infinity;
+            let maxPrice = -Infinity;
+            data.forEach(d => {
+                if (d.low < minPrice) minPrice = d.low;
+                if (d.high > maxPrice) maxPrice = d.high;
+            });
+
+            // Add margin to vertical range
+            const priceRange = (maxPrice - minPrice) || 1;
+            minPrice -= priceRange * 0.05;
+            maxPrice += priceRange * 0.05;
+
+            const getY = (p) => padding.top + chartH - ((p - minPrice) / (maxPrice - minPrice)) * chartH;
+            const getX = (i) => padding.left + (i / (data.length - 1)) * chartW;
+
+            // Draw Background Grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.lineWidth = 1;
+            const gridRows = 5;
+            for (let r = 0; r <= gridRows; r++) {
+                const y = padding.top + (chartH / gridRows) * r;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(w - padding.right, y);
+                ctx.stroke();
+
+                // Draw Y Axis Price Label
+                const priceLabel = maxPrice - (r / gridRows) * (maxPrice - minPrice);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px JetBrains Mono';
+                ctx.textAlign = 'left';
+                ctx.fillText('$' + priceLabel.toFixed(state.priceDecimals[state.symbol]), w - padding.right + 8, y + 3);
+            }
+
+            // Render Chart Mode: Candle vs Line
+            if (state.chartType === 'line') {
+                // Gradient Fill Line
+                ctx.beginPath();
+                data.forEach((d, i) => {
+                    const x = getX(i);
+                    const y = getY(d.close);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Fill gradient under line
+                const lastX = getX(data.length - 1);
+                const firstX = getX(0);
+                ctx.lineTo(lastX, padding.top + chartH);
+                ctx.lineTo(firstX, padding.top + chartH);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
+                grad.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
+                grad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+            } else {
+                // Candlestick Rendering
+                const candleWidth = Math.max(3, (chartW / data.length) * 0.65);
+
+                data.forEach((d, i) => {
+                    const x = getX(i);
+                    const openY = getY(d.open);
+                    const closeY = getY(d.close);
+                    const highY = getY(d.high);
+                    const lowY = getY(d.low);
+                    const isBullish = d.close >= d.open;
+
+                    const color = isBullish ? '#10b981' : '#ef4444';
+
+                    // High-Low Wick
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, highY);
+                    ctx.lineTo(x, lowY);
+                    ctx.stroke();
+
+                    // Candle Body
+                    ctx.fillStyle = color;
+                    const bodyY = Math.min(openY, closeY);
+                    const bodyH = Math.max(1.5, Math.abs(closeY - openY));
+                    ctx.fillRect(x - candleWidth / 2, bodyY, candleWidth, bodyH);
+                });
+            }
+
+            // Render Overlays: EMA 20 & EMA 50
+            if (state.overlays.ema20 && data.length > 5) {
+                const ema20 = calculateEMA(data, 20);
+                ctx.beginPath();
+                ema20.forEach((val, i) => {
+                    const x = getX(i);
+                    const y = getY(val);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = '#f59e0b'; // Amber
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            if (state.overlays.ema50 && data.length > 10) {
+                const ema50 = calculateEMA(data, 50);
+                ctx.beginPath();
+                ema50.forEach((val, i) => {
+                    const x = getX(i);
+                    const y = getY(val);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = '#06b6d4'; // Cyan
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Render Current Price Horizonal Line & Pulse Dot
+            const currentClose = data[data.length - 1].close;
+            const currentY = getY(currentClose);
+            const currentX = getX(data.length - 1);
+
+            ctx.strokeStyle = '#10b981';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, currentY);
+            ctx.lineTo(w - padding.right, currentY);
+            ctx.stroke();
+            ctx.setLineDash([]); // reset
+
+            // Price Dot
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Update OHLC Text in UI
+            const lastData = data[data.length - 1];
+            const dec = state.priceDecimals[state.symbol];
+            document.getElementById('ohlcO').innerText = '$' + lastData.open.toFixed(dec);
+            document.getElementById('ohlcH').innerText = '$' + lastData.high.toFixed(dec);
+            document.getElementById('ohlcL').innerText = '$' + lastData.low.toFixed(dec);
+            document.getElementById('ohlcC').innerText = '$' + lastData.close.toFixed(dec);
+        }
+
+        const timeframesData = [
+            { tf: 'D1', bias: 'BULLISH', rsi: 68.4, strength: 88, pattern: 'Strong Uptrend' },
+            { tf: 'H4', bias: 'BULLISH', rsi: 64.1, strength: 75, pattern: 'Higher Highs' },
+            { tf: 'H1', bias: 'BULLISH', rsi: 61.2, strength: 72, pattern: 'EMA 20 Bounce' },
+            { tf: 'M30', bias: 'BULLISH', rsi: 58.9, strength: 65, pattern: 'Bullish Flag' },
+            { tf: 'M15', bias: 'BULLISH', rsi: 55.4, strength: 60, pattern: 'Consolidation' },
+            { tf: 'M5', bias: 'BEARISH', rsi: 44.2, strength: 40, pattern: 'Minor Pullback' },
+            { tf: 'M1', bias: 'NEUTRAL', rsi: 49.0, strength: 50, pattern: 'Sideways' }
+        ];
+
+        function renderMarketBias() {
+            const container = document.getElementById('biasListContainer');
+            container.innerHTML = '';
+
+            timeframesData.forEach(item => {
+                let badgeClass = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                let icon = 'fa-arrow-trend-up';
+
+                if (item.bias === 'BEARISH') {
+                    badgeClass = 'bg-red-500/15 text-red-400 border-red-500/30';
+                    icon = 'fa-arrow-trend-down';
+                } else if (item.bias === 'NEUTRAL') {
+                    badgeClass = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+                    icon = 'fa-minus';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between glass-card-hover';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center font-mono font-bold text-xs text-slate-200">
+                            ${item.tf}
+                        </span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-extrabold text-xs tracking-wide border px-2 py-0.5 rounded-md ${badgeClass} flex items-center gap-1">
+                                    <i class="fa-solid ${icon} text-[10px]"></i> ${item.bias}
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-mono">RSI: ${item.rsi}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-0.5">${item.pattern}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-slate-400 font-semibold mb-1">Strength: ${item.strength}%</div>
+                        <div class="w-16 bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full ${item.bias === 'BEARISH' ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${item.strength}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderMovingAveragesTable() {
+            const tbody = document.getElementById('maTableBody');
+            const price = state.currentPrice;
+            const dec = state.priceDecimals[state.symbol];
+
+            const maData = [
+                { name: 'EMA 10', val: price - 0.8, cond: 'Above Price', act: 'BUY' },
+                { name: 'EMA 20', val: price - 1.5, cond: 'Above Price', act: 'BUY' },
+                { name: 'EMA 50', val: price - 3.2, cond: 'Golden Cross', act: 'STRONG BUY' },
+                { name: 'EMA 200', val: price - 8.4, cond: 'Long Trend Up', act: 'BUY' },
+                { name: 'SMA 50', val: price + 0.4, cond: 'Slight Resistance', act: 'SELL' }
+            ];
+
+            tbody.innerHTML = maData.map(row => {
+                const isBuy = row.act.includes('BUY');
+                const badge = isBuy 
+                    ? '<span class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-bold">BUY</span>'
+                    : '<span class="text-red-400 bg-red-500/10 px-2 py-0.5 rounded font-bold">SELL</span>';
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-2 font-bold text-slate-200">${row.name}</td>
+                        <td class="py-2 text-slate-100">$${row.val.toFixed(dec)}</td>
+                        <td class="py-2 text-slate-400 text-[11px] font-sans">${row.cond}</td>
+                        <td class="py-2 text-right">${badge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updatePivotPoints() {
+            const p = state.currentPrice;
+            const dec = state.priceDecimals[state.symbol];
+
+            document.getElementById('pivotPP').innerText = '$' + p.toFixed(dec);
+            document.getElementById('pivotR1').innerText = '$' + (p + 14.30).toFixed(dec);
+            document.getElementById('pivotR2').innerText = '$' + (p + 25.60).toFixed(dec);
+            document.getElementById('pivotR3').innerText = '$' + (p + 40.00).toFixed(dec);
+
+            document.getElementById('pivotS1').innerText = '$' + (p - 11.30).toFixed(dec);
+            document.getElementById('pivotS2').innerText = '$' + (p - 25.60).toFixed(dec);
+
+            // Setup Recommendation targets
+            document.getElementById('targetEntry').innerText = `$${(p - 1.50).toFixed(dec)} - $${p.toFixed(dec)}`;
+            document.getElementById('targetSL').innerText = `$${(p - 10.50).toFixed(dec)} (-105 pips)`;
+            document.getElementById('targetTP1').innerText = `$${(p + 16.20).toFixed(dec)} (+162 pips)`;
+            document.getElementById('targetTP2').innerText = `$${(p + 32.50).toFixed(dec)} (+325 pips)`;
+        }
+
+        function calculateLotSize() {
+            const balance = parseFloat(document.getElementById('calcBalance').value) || 1000;
+            const riskPct = parseFloat(document.getElementById('calcRiskPct').value) || 2;
+            const slPips = parseFloat(document.getElementById('calcSLPips').value) || 85;
+
+            const riskAmount = balance * (riskPct / 100);
+            
+            // XAUUSD standard approx multiplier ($10/pip for 1.0 lot)
+            let lotSize = riskAmount / (slPips * 10);
+            if (lotSize < 0.01) lotSize = 0.01;
+
+            document.getElementById('calcLotResult').innerText = lotSize.toFixed(2) + ' Lots';
+            document.getElementById('calcRiskValResult').innerText = '$' + riskAmount.toFixed(2);
+        }
+
+        function startLiveSimulation() {
+            setInterval(() => {
+                if (!state.isSimulating) return;
+
+                const dec = state.priceDecimals[state.symbol];
+                const delta = (Math.random() - 0.49) * (state.symbol === 'XAUUSD' ? 0.35 : 0.0003);
+                const oldPrice = state.currentPrice;
+                state.currentPrice += delta;
+
+                const displayEl = document.getElementById('livePriceDisplay');
+                displayEl.innerText = '$' + state.currentPrice.toFixed(dec);
+
+                // Sound and Flash Effect
+                if (delta > 0) {
+                    displayEl.className = 'font-mono text-base font-bold price-up';
+                    playBeep(750, 0.05);
+                } else {
+                    displayEl.className = 'font-mono text-base font-bold price-down';
+                    playBeep(450, 0.05);
+                }
+
+                // Update latest chart candle
+                if (state.chartData.length > 0) {
+                    const last = state.chartData[state.chartData.length - 1];
+                    last.close = state.currentPrice;
+                    if (state.currentPrice > last.high) last.high = state.currentPrice;
+                    if (state.currentPrice < last.low) last.low = state.currentPrice;
+
+                    // Push new candle periodically
+                    if (Math.random() < 0.15) {
+                        state.chartData.shift();
+                        state.chartData.push({
+                            time: Date.now(),
+                            open: state.currentPrice,
+                            high: state.currentPrice,
+                            low: state.currentPrice,
+                            close: state.currentPrice
+                        });
+                    }
+                    renderChart();
+                }
+
+                state.tickCount++;
+                document.getElementById('chartTickCount').innerText = `Ticks: ${state.tickCount.toLocaleString()}`;
+
+                // Update dynamic values randomly
+                const rsiVal = (60 + (Math.random() - 0.5) * 6).toFixed(1);
+                document.getElementById('indRSIVal').innerText = rsiVal;
+
+            }, 1200);
+        }
+
+        function changeSymbol(symbol) {
+            state.symbol = symbol;
+            document.getElementById('headerSymbolText').innerText = symbol;
+            document.getElementById('activeChartPairBadge').innerText = `${symbol} • ${state.timeframe}`;
+            
+            generateHistoricalData(symbol);
+            renderChart();
+            updatePivotPoints();
+            showToast(`Switched pair to ${symbol}`, 'success');
+        }
+
+        function setChartType(type) {
+            state.chartType = type;
+            const btnCandles = document.getElementById('btnChartCandles');
+            const btnLine = document.getElementById('btnChartLine');
+
+            if (type === 'candles') {
+                btnCandles.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 transition shadow';
+                btnLine.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+            } else {
+                btnLine.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 transition shadow';
+                btnCandles.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+            }
+            renderChart();
+        }
+
+        function setTimeframe(tf) {
+            state.timeframe = tf;
+            document.getElementById('activeChartPairBadge').innerText = `${state.symbol} • ${tf}`;
+            
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                if (btn.innerText === tf) {
+                    btn.className = 'tf-btn px-2 py-1 rounded-lg bg-slate-800 text-emerald-400 shadow';
+                } else {
+                    btn.className = 'tf-btn px-2 py-1 rounded-lg hover:text-white text-slate-400';
+                }
+            });
+
+            generateHistoricalData(state.symbol);
+            renderChart();
+            showToast(`Timeframe changed to ${tf}`);
+        }
+
+        function toggleOverlay(type) {
+            state.overlays[type] = !state.overlays[type];
+            const btnMap = {
+                ema20: 'overlayEma20',
+                ema50: 'overlayEma50',
+                bollinger: 'overlayBB'
+            };
+            const btn = document.getElementById(btnMap[type]);
+            if (state.overlays[type]) {
+                btn.classList.add('bg-opacity-30', 'border-opacity-80');
+            } else {
+                btn.classList.remove('bg-opacity-30', 'border-opacity-80');
+            }
+            renderChart();
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            if (state.soundEnabled) {
+                soundIcon.className = 'fa-solid fa-volume-high text-sm text-emerald-400';
+                showToast('Audio notifications ENABLED');
+            } else {
+                soundIcon.className = 'fa-solid fa-volume-xmark text-sm text-slate-500';
+                showToast('Audio notifications MUTED');
+            }
+        }
+
+        function toggleSimulation() {
+            state.isSimulating = !state.isSimulating;
+            const text = document.getElementById('simStatusText');
+            if (state.isSimulating) {
+                text.innerText = 'LIVE SIM';
+                showToast('Market ticker resumed');
+            } else {
+                text.innerText = 'PAUSED';
+                showToast('Market ticker paused');
+            }
+        }
+
+        function resetChartZoom() {
+            generateHistoricalData(state.symbol);
+            renderChart();
+            showToast('Chart reset successfully');
+        }
+
+        function copyTradeSignal() {
+            const signalText = `[TRADE INTELLIGENT SIGNAL]\nSymbol: ${state.symbol}\nSignal: STRONG BUY\nEntry: ${document.getElementById('targetEntry').innerText}\nSL: ${document.getElementById('targetSL').innerText}\nTP1: ${document.getElementById('targetTP1').innerText}\nTP2: ${document.getElementById('targetTP2').innerText}`;
+            
+            navigator.clipboard.writeText(signalText).then(() => {
+                showToast('Signal copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Failed to copy signal', 'error');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let border = 'border-slate-700 text-slate-200';
+            if (type === 'success') border = 'border-emerald-500 text-emerald-400';
+            if (type === 'error') border = 'border-red-500 text-red-400';
+
+            toast.className = `glass-card border ${border} px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Clock updating function
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('liveClockTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+            }, 1000);
+        }
+
+        window.onload = function() {
+            generateHistoricalData(state.symbol);
+            resizeCanvas();
+            renderMarketBias();
+            renderMovingAveragesTable();
+            updatePivotPoints();
+            calculateLotSize();
+            startClock();
+            startLiveSimulation();
+
+            showToast('TRADE INTELLIGENT Engine Ready', 'success');
+        };
+    </script>
+</body>
+</html>
