@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Tracker - Twelve Data</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #38bdf8;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background-color: #0f172a;
+      color: #ffffff;
+      font-size: 1rem;
+      outline: none;
+      text-transform: uppercase;
+    }
+
+    input:focus {
+      border-color: #38bdf8;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #0369a1;
+    }
+
+    .result-card {
+      background-color: #0f172a;
+      padding: 16px;
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #334155;
+    }
+
+    .symbol-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .symbol-name {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .price {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #4ade80;
+    }
+
+    .error {
+      color: #f87171;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      color: #94a3b8;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Stock & Crypto Tracker</h1>
+    
+    <div class="input-group">
+      <input type="text" id="symbolInput" placeholder="Contoh: AAPL, TSLA, BTC/USD" value="AAPL">
+      <button onclick="fetchStockData()">Cari</button>
+    </div>
+
+    <div id="loading" class="loading">Memuat data...</div>
+
+    <div id="resultCard" class="result-card">
+      <div class="symbol-header">
+        <span class="symbol-name" id="displaySymbol">AAPL</span>
+        <span style="color: #94a3b8; font-size: 0.9rem;">Realtime Price</span>
+      </div>
+      <div class="price" id="displayPrice">$0.00</div>
+      <div style="font-size: 0.85rem; color: #94a3b8;" id="displayTimestamp">Terakhir diperbarui: -</div>
+    </div>
+
+    <div id="errorMessage" class="error"></div>
+  </div>
+
+  <script>
+    // Masukkan API Key Twelve Data kamu di dalam tanda kutip di bawah
+    const API_KEY = "YOUR_TWELVE_DATA_API_KEY";
+
+    async function fetchStockData() {
+      const symbolInput = document.getElementById("symbolInput").value.trim().toUpperCase();
+      const loading = document.getElementById("loading");
+      const resultCard = document.getElementById("resultCard");
+      const errorMessage = document.getElementById("errorMessage");
+
+      if (!symbolInput) return;
+
+      loading.style.display = "block";
+      resultCard.style.display = "none";
+      errorMessage.innerText = "";
+
+      try {
+        const response = await fetch(`https://api.twelvedata.com/price?symbol=${symbolInput}&apikey=${API_KEY}`);
+        const data = await response.json();
+
+        if (data.status === "error" || !data.price) {
+          throw new Error(data.message || "Simbol tidak ditemukan.");
+        }
+
+        document.getElementById("displaySymbol").innerText = symbolInput;
+        document.getElementById("displayPrice").innerText = `$${parseFloat(data.price).toFixed(2)}`;
+        document.getElementById("displayTimestamp").innerText = `Terakhir diperbarui: ${new Date().toLocaleTimeString()}`;
+        
+        resultCard.style.display = "flex";
+      } catch (err) {
+        errorMessage.innerText = err.message || "Gagal mengambil data.";
+      } finally {
+        loading.style.display = "none";
+      }
+    }
+
+    // Panggil otomatis saat pertama kali dibuka
+    fetchStockData();
+  </script>
+
+</body>
+</html>
