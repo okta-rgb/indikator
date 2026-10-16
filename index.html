@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Intelligent - Dashboard Analysis</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        accent: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Header / Navbar -->
+    <header class="bg-cardbg border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide text-white">TRADE INTELLIGENT</h1>
+                    <p class="text-xs text-slate-400">Smart Money Concepts & AI Analysis</p>
+                </div>
+            </div>
+            
+            <!-- Real-Time Ticker di Navbar -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <div id="realtime-price" class="text-sm font-bold text-emerald-400">--</div>
+                    <div id="realtime-change" class="text-xs text-slate-400">Loading live data...</div>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-700/50">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Live System
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel: Control & Config (1 Column) -->
+        <section class="space-y-6">
+            <!-- Market Selector Card -->
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
+                    <i class="fa-solid fa-sliders mr-2 text-blue-500"></i>Market & Config
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Asset / Pair</label>
+                        <select id="asset-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="XAUUSD">XAUUSD (Gold)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Timeframe</label>
+                        <select id="timeframe-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="15min">M15 (Execution)</option>
+                            <option value="1h">H1 (Intraday)</option>
+                            <option value="4h">H4 (Structure Bias)</option>
+                        </select>
+                    </div>
+
+                    <!-- Input API Key Settings -->
+                    <div class="border-t border-slate-800 pt-3 space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Twelve Data API Key</label>
+                            <input type="password" id="twelvedata-key" placeholder="Masukkan API Key Twelve Data" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Gemini AI API Key</label>
+                            <input type="password" id="gemini-key" placeholder="Masukkan API Key Gemini" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <button id="save-settings-btn" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2 rounded-lg text-xs transition-all border border-slate-700">
+                            Simpan API Keys
+                        </button>
+                    </div>
+
+                    <button id="analyze-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-md hover:shadow-blue-500/20 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Jalankan Analisis AI</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Status / Stats -->
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">
+                    <i class="fa-solid fa-shield-halved mr-2 text-blue-500"></i>SMC Filter Status
+                </h2>
+                <ul class="text-xs space-y-2 text-slate-400">
+                    <li class="flex justify-between items-center py-1 border-b border-slate-800/60">
+                        <span>Liquidity Sweep Rule:</span>
+                        <span class="text-emerald-400 font-medium">Active (Wick Filter)</span>
+                    </li>
+                    <li class="flex justify-between items-center py-1 border-b border-slate-800/60">
+                        <span>Body Close Confirmation:</span>
+                        <span class="text-emerald-400 font-medium">Strict</span>
+                    </li>
+                    <li class="flex justify-between items-center py-1">
+                        <span>AI Engine:</span>
+                        <span class="text-blue-400 font-medium">Gemini 1.5 Flash</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Right Panel: Chart Preview & AI Analysis Output (2 Columns) -->
+        <section class="lg:col-span-2 space-y-6">
+            
+            <!-- Chart Container Simulation / Placeholder -->
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between h-[320px]">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                        <i class="fa-solid fa-chart-candlestick mr-2 text-blue-500"></i>Price Action & Zone Mapping
+                    </h2>
+                    <span id="activePairLabel" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded">XAUUSD - Live Feed</span>
+                </div>
+                
+                <!-- Area Chart/Canvas placeholder -->
+                <div class="flex-1 bg-slate-900/80 border border-slate-800 rounded-lg flex flex-col items-center justify-center text-slate-500 p-6 text-center">
+                    <i class="fa-solid fa-chart-area text-4xl mb-3 text-slate-600"></i>
+                    <p class="text-sm text-slate-400">Harga XAUUSD ditarik secara real-time via Twelve Data.</p>
+                    <p class="text-xs text-slate-600 mt-1">Sinyal Buy/Sell Limit divalidasi ketat oleh SMC Engine & Gemini AI.</p>
+                </div>
+            </div>
+
+            <!-- AI & SMC Result Output Box -->
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center justify-between">
+                    <span><i class="fa-solid fa-terminal mr-2 text-blue-500"></i>Smart Analysis & Signal Output</span>
+                    <span id="analysisStatus" class="text-xs text-slate-500">Ready</span>
+                </h2>
+                
+                <!-- ID ini disesuaikan ke 'analysis-result' agar nyambung dengan app.js -->
+                <div id="analysis-result" class="bg-slate-900 border border-slate-800 rounded-lg p-4 text-sm text-slate-300 min-h-[150px] font-mono leading-relaxed space-y-3">
+                    <p class="text-slate-500 italic">// Silakan masukkan API Key di panel kiri, lalu klik "Jalankan Analisis AI"...</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800/80 mt-auto">
+        Trade Intelligent Modular Engine &copy; 2026
+    </footer>
+
+    <!-- Main Entry Point (Modular JS) -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
