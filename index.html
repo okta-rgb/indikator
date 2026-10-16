@@ -1,0 +1,200 @@
+    <!-- Integrated Native Script -->
+    <script>
+        // API KEY DEFAULT (Sudah dipasang otomatis di sini)
+        const DEFAULT_TWELVE_KEY = 'A1aa29ae009744a9a68bebf6542a8ae0';
+        const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6K5wJjPu2CupOZdm__knkeaHdZMccuFNy1WIvf-NTNqGQ';
+
+        const CONFIG = {
+            getApiKey(key) {
+                // Langsung berikan key default yang sudah dipasang
+                if (key === 'twelvedata_api_key') return DEFAULT_TWELVE_KEY;
+                if (key === 'gemini_api_key') return DEFAULT_GEMINI_KEY;
+                
+                // Fallback ke localStorage jika ada input manual
+                const stored = localStorage.getItem(key);
+                return stored ? stored.trim() : "";
+            },
+            setApiKey(key, value) { 
+                localStorage.setItem(key, value.trim()); 
+            }
+        };
+
+        // SMC ENGINE
+        class SMCEngine {
+            constructor(candles) { this.candles = candles; }
+            getSwingLevels(lookback = 20) {
+                if (this.candles.length < lookback) return null;
+                const recent = this.candles.slice(-lookback, -1);
+                let highest = -Infinity, lowest = Infinity;
+                recent.forEach(c => {
+                    if (c.high > highest) highest = c.high;
+                    if (c.low < lowest) lowest = c.low;
+                });
+                return { swingHigh: highest, swingLow: lowest };
+            }
+            analyzeStructure(lookback = 20) {
+                const swings = this.getSwingLevels(lookback);
+                if (!swings || this.candles.length === 0) return null;
+                const current = this.candles[this.candles.length - 1];
+                const { swingHigh, swingLow } = swings;
+                let result = { type: "NEUTRAL", swingHigh, swingLow, description: "Harga bergerak dalam range struktur." };
+                if (current.high > swingHigh) {
+                    result.type = current.close <= swingHigh ? "SWEEP_BEARISH" : "BOS_BULLISH";
+                    result.description = current.close <= swingHigh ? `LIQUIDITY SWEEP di High (${swingHigh})!` : `VALID BOS BULLISH di atas ${swingHigh}!`;
+                } else if (current.low < swingLow) {
+                    result.type = current.close >= swingLow ? "SWEEP_BULLISH" : "BOS_BEARISH";
+                    result.description = current.close >= swingLow ? `LIQUIDITY SWEEP di Low (${swingLow})!` : `VALID BOS BEARISH di bawah ${swingLow}!`;
+                }
+                return result;
+            }
+            findFVG() {
+                if (this.candles.length < 3) return [];
+                const fvgList = [];
+                for (let i = 2; i < this.candles.length; i++) {
+                    const c1 = this.candles[i - 2], c3 = this.candles[i];
+                    if (c3.low > c1.high) fvgList.push({ type: "BULLISH_FVG", top: c3.low, bottom: c1.high });
+                    else if (c3.high < c1.low) fvgList.push({ type: "BEARISH_FVG", top: c1.low, bottom: c3.high });
+                }
+                return fvgList;
+            }
+        }
+
+        // TWELVE DATA API
+        class TwelveDataAPI {
+            constructor() { this.baseUrl = "https://api.twelvedata.com"; }
+            getKey() { return CONFIG.getApiKey('twelvedata_api_key'); }
+            async getCandles(symbol = "XAU/USD", interval = "15min", outputsize = 50) {
+                const apiKey = this.getKey();
+                if (!apiKey) throw new Error("API Key Twelve Data belum diisi!");
+                const url = `${this.baseUrl}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${apiKey}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.status === "error") throw new Error(data.message || "Gagal mengambil data candle.");
+                return data.values.reverse().map(i => ({
+                    datetime: i.datetime, open: parseFloat(i.open), high: parseFloat(i.high), low: parseFloat(i.low), close: parseFloat(i.close), volume: parseInt(i.volume) || 0
+                }));
+            }
+            async getRealTimePrice(symbol = "XAU/USD") {
+                const apiKey = this.getKey();
+                if (!apiKey) return null;
+                const url = `${this.baseUrl}/quote?symbol=${symbol}&apikey=${apiKey}`;
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data.status === "error") return null;
+                    return { price: parseFloat(data.close || data.price), change: parseFloat(data.change), percentChange: parseFloat(data.percent_change), isUp: parseFloat(data.change) >= 0 };
+                } catch(e) { return null; }
+            }
+        }
+
+        // GEMINI AI
+        async function getGeminiAnalysis(pair, timeframe, marketData, smcResult) {
+            const apiKey = CONFIG.getApiKey('gemini_api_key');
+            if (!apiKey) throw new Error("API Key Gemini belum diisi!");
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const prompt = `Trader institusional SMC ketat. Analisis pair ${pair} timeframe ${timeframe}. SMC: ${JSON.stringify(smcResult)}. Data: ${JSON.stringify(marketData.slice(-5))}. Aturan: Hanya berikan sinyal jika ada Sweep + MSS + FVG. Berikan JSON murni format: {"action":"BUY_LIMIT"|"SELL_LIMIT"|"WAIT","confidence":"Tinggi","entryPrice":0,"stopLoss":0,"takeProfit1":0,"takeProfit2":0,"reasoning":"alasan"}`;
+            
+            try {
+                const res = await fetch(url, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({contents: [{parts: [{text: prompt}]}]}) 
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    const errMsg = data.error && data.error.message ? data.error.message : "Unknown error";
+                    throw new Error(`Gemini API Error: ${errMsg}`);
+                }
+                
+                const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(text);
+            } catch (err) {
+                throw new Error(`${err.message}`);
+            }
+        }
+
+        // UI CONTROLLER
+        const tdApi = new TwelveDataAPI();
+        document.addEventListener('DOMContentLoaded', () => {
+            const twKeyInput = document.getElementById('twelvedata-key');
+            const gmKeyInput = document.getElementById('gemini-key');
+
+            if (twKeyInput) twKeyInput.value = "••••••••••••••••••••••••";
+            if (gmKeyInput) gmKeyInput.value = "••••••••••••••••••••••••";
+
+            const saveBtn = document.getElementById('save-settings-btn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    if(twKeyInput.value && !twKeyInput.value.includes('•')) {
+                        CONFIG.setApiKey('twelvedata_api_key', twKeyInput.value);
+                    }
+                    if(gmKeyInput.value && !gmKeyInput.value.includes('•')) {
+                        CONFIG.setApiKey('gemini_api_key', gmKeyInput.value);
+                    }
+                    alert("API Keys berhasil diperbarui!");
+                    updateTicker();
+                });
+            }
+
+            async function updateTicker() {
+                const pEl = document.getElementById('realtime-price'), cEl = document.getElementById('realtime-change');
+                if (!pEl) return;
+                const d = await tdApi.getRealTimePrice("XAU/USD");
+                if (!d) { pEl.textContent = "Check API Key"; return; }
+                pEl.textContent = `$${d.price.toFixed(2)}`;
+                const sign = d.isUp ? '+' : '';
+                cEl.textContent = `${sign}${d.change.toFixed(2)} (${sign}${d.percentChange.toFixed(2)}%)`;
+                cEl.className = d.isUp ? 'text-xs text-emerald-400 font-bold' : 'text-xs text-rose-400 font-bold';
+            }
+            updateTicker();
+            setInterval(updateTicker, 10000);
+
+            document.getElementById('analyze-btn').addEventListener('click', async () => {
+                const btn = document.getElementById('analyze-btn');
+                const resultBox = document.getElementById('analysis-result');
+                const timeframe = document.getElementById('timeframe-select').value;
+                btn.disabled = true;
+                btn.textContent = "Menganalisis Market...";
+                try {
+                    const candles = await tdApi.getCandles("XAU/USD", timeframe, 50);
+                    const smc = new SMCEngine(candles);
+                    const resSmc = smc.analyzeStructure();
+                    const fvgs = smc.findFVG();
+                    const fullSmc = { ...resSmc, fvgList: fvgs };
+                    const ai = await getGeminiAnalysis("XAUUSD", timeframe, candles, fullSmc);
+
+                    let bg = "bg-slate-600";
+                    if (ai.action === "BUY_LIMIT") bg = "bg-emerald-600";
+                    if (ai.action === "SELL_LIMIT") bg = "bg-rose-600";
+
+                    resultBox.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold ${bg} px-3 py-1 rounded text-white">${ai.action}</span>
+                                <span class="text-xs text-slate-400">Keyakinan: ${ai.confidence}</span>
+                            </div>
+                            <p class="text-xs text-slate-300"><strong>Alasan SMC:</strong> ${ai.reasoning}</p>
+                            ${ai.action !== "WAIT" ? `
+                                <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded border border-slate-800">
+                                    <div><strong>Entry:</strong> $${ai.entryPrice}</div> <div class="text-rose-400"><strong>SL:</strong> $${ai.stopLoss}</div>
+                                    <div class="text-emerald-400"><strong>TP1:</strong> $${ai.takeProfit1}</div> <div class="text-emerald-300"><strong>TP2:</strong> $${ai.takeProfit2}</div>
+                                </div>
+                            ` : '<p class="text-xs text-amber-400 italic">Belum ada setup valid di timeframe ini. Menunggu konfirmasi...</p>'}
+                            <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2">
+                                <strong>Struktur:</strong> ${fullSmc.description}
+                            </div>
+                        </div>
+                    `;
+                } catch(err) {
+                    resultBox.innerHTML = `<p class="text-xs text-rose-400"><strong>Error Detail:</strong> ${err.message}</p>`;
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Jalankan Analisis AI";
+                }
+            });
+        });
+                      </script>
+                      
