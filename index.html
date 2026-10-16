@@ -247,15 +247,31 @@
 
         // GEMINI AI
         async function getGeminiAnalysis(pair, timeframe, marketData, smcResult) {
-            const apiKey = CONFIG.getApiKey('gemini_api_key');
-            if (!apiKey) throw new Error("API Key Gemini belum diset!");
+            const apiKey = CONFIG.getApiKey('AQ.Ab8RN6K5wJjPu2CupOZdm__knkeaHdZMccuFNy1WIvf-NTNqGQ');
+            if (!apiKey) throw new Error("API Key Gemini belum diisi!");
+            
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const prompt = `Trader institusional SMC ketat. Analisis pair ${pair} timeframe ${timeframe}. SMC: ${JSON.stringify(smcResult)}. Data: ${JSON.stringify(marketData.slice(-5))}. Aturan: Hanya berikan sinyal jika ada Sweep + MSS + FVG. Berikan JSON murni format: {"action":"BUY_LIMIT"|"SELL_LIMIT"|"WAIT","confidence":"Tinggi","entryPrice":0,"stopLoss":0,"takeProfit1":0,"takeProfit2":0,"reasoning":"alasan"}`;
-            const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({contents: [{parts: [{text: prompt}]}]}) });
-            if (!res.ok) throw new Error("Gagal terhubung ke Gemini AI.");
-            const data = await res.json();
-            const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(text);
+            
+            try {
+                const res = await fetch(url, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({contents: [{parts: [{text: prompt}]}]}) 
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    const errMsg = data.error && data.error.message ? data.error.message : "Unknown error";
+                    throw new Error(`Gemini API Error: ${errMsg}`);
+                }
+                
+                const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(text);
+            } catch (err) {
+                throw new Error(`${err.message}`);
+            }
         }
 
         // UI CONTROLLER
