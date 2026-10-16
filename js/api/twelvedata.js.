@@ -1,0 +1,87 @@
+/**
+ * Modul Twelve Data API untuk Trade Intelligent
+ * Mengambil data candle (OHLCV) dan harga XAUUSD secara real-time.
+ */
+
+import { CONFIG } from '../config.js';
+
+export class TwelveDataAPI {
+    constructor() {
+        this.baseUrl = "https://api.twelvedata.com";
+    }
+
+    /**
+     * Ambil API Key dari LocalStorage
+     */
+    getKey() {
+        const key = CONFIG.getApiKey('twelvedata_api_key');
+        if (!key) {
+            console.warn("Twelve Data API Key belum diisi di Settings.");
+        }
+        return key;
+    }
+
+    /**
+     * Fetch Data Candle / Time Series (OHLCV)
+     * Contoh: symbol = "XAU/USD", interval = "15min", outputsize = 50
+     */
+    async getCandles(symbol = "XAU/USD", interval = "15min", outputsize = 50) {
+        const apiKey = this.getKey();
+        if (!apiKey) throw new Error("API Key Twelve Data belum diset!");
+
+        const url = `${this.baseUrl}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${apiKey}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.status === "error") {
+                throw new Error(data.message || "Gagal mengambil data candle dari Twelve Data.");
+            }
+
+            // Transformasi data agar sesuai dengan format SMC Engine (diurutkan dari lama ke baru)
+            const candles = data.values.reverse().map(item => ({
+                datetime: item.datetime,
+                open: parseFloat(item.open),
+                high: parseFloat(item.high),
+                low: parseFloat(item.low),
+                close: parseFloat(item.close),
+                volume: parseInt(item.volume) || 0
+            }));
+
+            return candles;
+        } catch (error) {
+            console.error("Error Twelve Data GetCandles:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch Harga Real-Time Lengkap dengan Perubahan (%)
+     */
+    async getRealTimePrice(symbol = "XAU/USD") {
+        const apiKey = this.getKey();
+        if (!apiKey) return null;
+
+        const url = `${this.baseUrl}/quote?symbol=${symbol}&apikey=${apiKey}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.status === "error") return null;
+
+            return {
+                price: parseFloat(data.close || data.price),
+                change: parseFloat(data.change),
+                percentChange: parseFloat(data.percent_change),
+                high: parseFloat(data.high),
+                low: parseFloat(data.low),
+                isUp: parseFloat(data.change) >= 0
+            };
+        } catch (error) {
+            console.error("Error Twelve Data RealTimePrice:", error);
+            return null;
+        }
+    }
+}
