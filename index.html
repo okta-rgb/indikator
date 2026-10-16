@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Intelligent - Dashboard Analysis</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        accent: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Header / Navbar -->
+    <header class="bg-cardbg border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide text-white">TRADE INTELLIGENT</h1>
+                    <p class="text-xs text-slate-400">Smart Money Concepts & AI Analysis</p>
+                </div>
+            </div>
+            
+            <!-- Real-Time Ticker di Navbar -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <div id="realtime-price" class="text-sm font-bold text-emerald-400">--</div>
+                    <div id="realtime-change" class="text-xs text-slate-400">Loading live data...</div>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-700/50">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Live System
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel: Control & Config (1 Column) -->
+        <section class="space-y-6">
+            <!-- Market Selector Card -->
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
+                    <i class="fa-solid fa-sliders mr-2 text-blue-500"></i>Market & Config
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Asset / Pair</label>
+                        <select id="asset-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="XAUUSD">XAUUSD (Gold)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Timeframe</label>
+                        <select id="timeframe-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                            <option value="5min">M5 (Scalping Entry)</option>
+                            <option value="15min" selected>M15 (Execution)</option>
+                            <option value="1h">H1 (Intraday)</option>
+                            <option value="4h">H4 (Structure Bias)</option>
+                        </select>
+                    </div>
+
+                    <!-- Input API Key Settings -->
+                    <div class="border-t border-slate-800 pt-3 space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Twelve Data API Key</label>
+                            <input type="password" id="twelvedata-key" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Gemini AI API Key</label>
+                            <input type="password" id="gemini-key" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500" readonly>
+                        </div>
+                        <div class="text-[10px] text-emerald-400 text-center font-medium">✓ API Keys Aktif Otomatis</div>
+                    </div>
+
+                    <button id="analyze-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-md hover:shadow-blue-500/20 flex items-center justify-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Jalankan Analisis AI</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Status / Stats -->
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">
+                    <i class="fa-solid fa-shield-halved mr-2 text-blue-500"></i>SMC Filter Status
+                </h2>
+                <ul class="text-xs space-y-2 text-slate-400">
+                    <li class="flex justify-between items-center py-1 border-b border-slate-800/60">
+                        <span>Liquidity Sweep Rule:</span>
+                        <span class="text-emerald-400 font-medium">Active (Wick Filter)</span>
+                    </li>
+                    <li class="flex justify-between items-center py-1 border-b border-slate-800/60">
+                        <span>Body Close Confirmation:</span>
+                        <span class="text-emerald-400 font-medium">Strict</span>
+                    </li>
+                    <li class="flex justify-between items-center py-1">
+                        <span>AI Engine:</span>
+                        <span class="text-blue-400 font-medium">Gemini 1.5 Flash</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Right Panel: Chart Preview & AI Analysis Output -->
+        <section class="lg:col-span-2 space-y-6">
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between h-[320px]">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                        <i class="fa-solid fa-chart-candlestick mr-2 text-blue-500"></i>Price Action & Zone Mapping
+                    </h2>
+                    <span id="activePairLabel" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded">XAUUSD - Live Feed</span>
+                </div>
+                
+                <div class="flex-1 bg-slate-900/80 border border-slate-800 rounded-lg flex flex-col items-center justify-center text-slate-500 p-6 text-center">
+                    <i class="fa-solid fa-chart-area text-4xl mb-3 text-slate-600"></i>
+                    <p class="text-sm text-slate-400">Harga XAUUSD ditarik secara real-time via Twelve Data.</p>
+                    <p class="text-xs text-slate-600 mt-1">Sinyal Buy/Sell Limit divalidasi ketat oleh SMC Engine & Gemini AI.</p>
+                </div>
+            </div>
+
+            <div class="bg-cardbg border border-slate-800 rounded-xl p-5 shadow-lg">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center justify-between">
+                    <span><i class="fa-solid fa-terminal mr-2 text-blue-500"></i>Smart Analysis & Signal Output</span>
+                    <span id="analysisStatus" class="text-xs text-slate-500">Ready</span>
+                </h2>
+                
+                <div id="analysis-result" class="bg-slate-900 border border-slate-800 rounded-lg p-4 text-sm text-slate-300 min-h-[150px] font-mono leading-relaxed space-y-3">
+                    <p class="text-slate-500 italic">// Silakan pilih timeframe M5/M15 lalu klik "Jalankan Analisis AI"...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800/80 mt-auto">
+        Trade Intelligent Integrated Engine &copy; 2026
+    </footer>
+
+    <!-- Integrated Native Script -->
+    <script>
+        const DEFAULT_TWELVE_KEY = 'A1aa29ae009744a9a68bebf6542a8ae0';
+        const DEFAULT_GEMINI_KEY = 'AQ.Ab8RN6K5wJjPu2CupOZdm__knkeaHdZMccuFNy1WIvf-NTNqGQ';
+
+        const CONFIG = {
+            getApiKey(key) {
+                if (key === 'twelvedata_api_key') return DEFAULT_TWELVE_KEY;
+                if (key === 'gemini_api_key') return DEFAULT_GEMINI_KEY;
+                return "";
+            }
+        };
+
+        class SMCEngine {
+            constructor(candles) { this.candles = candles; }
+            getSwingLevels(lookback = 20) {
+                if (this.candles.length < lookback) return null;
+                const recent = this.candles.slice(-lookback, -1);
+                let highest = -Infinity, lowest = Infinity;
+                recent.forEach(c => {
+                    if (c.high > highest) highest = c.high;
+                    if (c.low < lowest) lowest = c.low;
+                });
+                return { swingHigh: highest, swingLow: lowest };
+            }
+            analyzeStructure(lookback = 20) {
+                const swings = this.getSwingLevels(lookback);
+                if (!swings || this.candles.length === 0) return null;
+                const current = this.candles[this.candles.length - 1];
+                const { swingHigh, swingLow } = swings;
+                let result = { type: "NEUTRAL", swingHigh, swingLow, description: "Harga bergerak dalam range struktur." };
+                if (current.high > swingHigh) {
+                    result.type = current.close <= swingHigh ? "SWEEP_BEARISH" : "BOS_BULLISH";
+                    result.description = current.close <= swingHigh ? `LIQUIDITY SWEEP di High (${swingHigh})!` : `VALID BOS BULLISH di atas ${swingHigh}!`;
+                } else if (current.low < swingLow) {
+                    result.type = current.close >= swingLow ? "SWEEP_BULLISH" : "BOS_BEARISH";
+                    result.description = current.close >= swingLow ? `LIQUIDITY SWEEP di Low (${swingLow})!` : `VALID BOS BEARISH di bawah ${swingLow}!`;
+                }
+                return result;
+            }
+            findFVG() {
+                if (this.candles.length < 3) return [];
+                const fvgList = [];
+                for (let i = 2; i < this.candles.length; i++) {
+                    const c1 = this.candles[i - 2], c3 = this.candles[i];
+                    if (c3.low > c1.high) fvgList.push({ type: "BULLISH_FVG", top: c3.low, bottom: c1.high });
+                    else if (c3.high < c1.low) fvgList.push({ type: "BEARISH_FVG", top: c1.low, bottom: c3.high });
+                }
+                return fvgList;
+            }
+        }
+
+        class TwelveDataAPI {
+            constructor() { this.baseUrl = "https://api.twelvedata.com"; }
+            getKey() { return CONFIG.getApiKey('twelvedata_api_key'); }
+            async getCandles(symbol = "XAU/USD", interval = "15min", outputsize = 50) {
+                const apiKey = this.getKey();
+                if (!apiKey) throw new Error("API Key Twelve Data belum diisi!");
+                const url = `${this.baseUrl}/time_series?symbol=${symbol}&interval=${interval}&outputsize=${outputsize}&apikey=${apiKey}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.status === "error") throw new Error(data.message || "Gagal mengambil data candle.");
+                return data.values.reverse().map(i => ({
+                    datetime: i.datetime, open: parseFloat(i.open), high: parseFloat(i.high), low: parseFloat(i.low), close: parseFloat(i.close), volume: parseInt(i.volume) || 0
+                }));
+            }
+            async getRealTimePrice(symbol = "XAU/USD") {
+                const apiKey = this.getKey();
+                if (!apiKey) return null;
+                const url = `${this.baseUrl}/quote?symbol=${symbol}&apikey=${apiKey}`;
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data.status === "error") return null;
+                    return { price: parseFloat(data.close || data.price), change: parseFloat(data.change), percentChange: parseFloat(data.percent_change), isUp: parseFloat(data.change) >= 0 };
+                } catch(e) { return null; }
+            }
+        }
+
+        async function getGeminiAnalysis(pair, timeframe, marketData, smcResult) {
+            const apiKey = CONFIG.getApiKey('gemini_api_key');
+            if (!apiKey) throw new Error("API Key Gemini belum diisi!");
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const prompt = `Trader institusional SMC ketat. Analisis pair ${pair} timeframe ${timeframe}. SMC: ${JSON.stringify(smcResult)}. Data: ${JSON.stringify(marketData.slice(-5))}. Aturan: Hanya berikan sinyal jika ada Sweep + MSS + FVG. Berikan JSON murni format: {"action":"BUY_LIMIT"|"SELL_LIMIT"|"WAIT","confidence":"Tinggi","entryPrice":0,"stopLoss":0,"takeProfit1":0,"takeProfit2":0,"reasoning":"alasan"}`;
+            
+            const res = await fetch(url, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({contents: [{parts: [{text: prompt}]}]}) 
+            });
+            
+            const data = await res.json();
+            if (!res.ok) {
+                const errMsg = data.error && data.error.message ? data.error.message : "Unknown error";
+                throw new Error(`Gemini API Error: ${errMsg}`);
+            }
+            
+            const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(text);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const twKeyInput = document.getElementById('twelvedata-key');
+            const gmKeyInput = document.getElementById('gemini-key');
+
+            if (twKeyInput) twKeyInput.value = "••••••••••••••••••••••••";
+            if (gmKeyInput) gmKeyInput.value = "••••••••••••••••••••••••";
+
+            const tdApi = new TwelveDataAPI();
+
+            async function updateTicker() {
+                const pEl = document.getElementById('realtime-price'), cEl = document.getElementById('realtime-change');
+                if (!pEl) return;
+                const d = await tdApi.getRealTimePrice("XAU/USD");
+                if (!d) { pEl.textContent = "Check API Key"; return; }
+                pEl.textContent = `$${d.price.toFixed(2)}`;
+                const sign = d.isUp ? '+' : '';
+                cEl.textContent = `${sign}${d.change.toFixed(2)} (${sign}${d.percentChange.toFixed(2)}%)`;
+                cEl.className = d.isUp ? 'text-xs text-emerald-400 font-bold' : 'text-xs text-rose-400 font-bold';
+            }
+            updateTicker();
+            setInterval(updateTicker, 10000);
+
+            document.getElementById('analyze-btn').addEventListener('click', async () => {
+                const btn = document.getElementById('analyze-btn');
+                const resultBox = document.getElementById('analysis-result');
+                const timeframe = document.getElementById('timeframe-select').value;
+                btn.disabled = true;
+                btn.textContent = "Menganalisis Market...";
+                try {
+                    const candles = await tdApi.getCandles("XAU/USD", timeframe, 50);
+                    const smc = new SMCEngine(candles);
+                    const resSmc = smc.analyzeStructure();
+                    const fvgs = smc.findFVG();
+                    const fullSmc = { ...resSmc, fvgList: fvgs };
+                    const ai = await getGeminiAnalysis("XAUUSD", timeframe, candles, fullSmc);
+
+                    let bg = "bg-slate-600";
+                    if (ai.action === "BUY_LIMIT") bg = "bg-emerald-600";
+                    if (ai.action === "SELL_LIMIT") bg = "bg-rose-600";
+
+                    resultBox.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold ${bg} px-3 py-1 rounded text-white">${ai.action}</span>
+                                <span class="text-xs text-slate-400">Keyakinan: ${ai.confidence}</span>
+                            </div>
+                            <p class="text-xs text-slate-300"><strong>Alasan SMC:</strong> ${ai.reasoning}</p>
+                            ${ai.action !== "WAIT" ? `
+                                <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded border border-slate-800">
+                                    <div><strong>Entry:</strong> $${ai.entryPrice}</div> <div class="text-rose-400"><strong>SL:</strong> $${ai.stopLoss}</div>
+                                    <div class="text-emerald-400"><strong>TP1:</strong> $${ai.takeProfit1}</div> <div class="text-emerald-300"><strong>TP2:</strong> $${ai.takeProfit2}</div>
+                                </div>
+                            ` : '<p class="text-xs text-amber-400 italic">Belum ada setup valid di timeframe ini. Menunggu konfirmasi...</p>'}
+                            <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2">
+                                <strong>Struktur:</strong> ${fullSmc.description}
+                            </div>
+                        </div>
+                    `;
+                } catch(err) {
+                    resultBox.innerHTML = `<p class="text-xs text-rose-400"><strong>Error Detail:</strong> ${err.message}</p>`;
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Jalankan Analisis AI";
+                }
+            });
+        });
+    </script>
+</body>
+  </html>
+  
